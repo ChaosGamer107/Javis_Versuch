@@ -2,6 +2,10 @@ import requests
 from datetime import datetime
 import webbrowser
 import json
+import speech_recognition as sr
+import pyttsx3
+
+engine=pyttsx3.init()
 
 print("Nova ist bereit")
 
@@ -24,6 +28,10 @@ Wenn keine Aktion nötig ist:
 """
 ]
 
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
 def get_time():
     now = datetime.now()
     print("DEBUG SYSTEM TIME:", now)
@@ -33,13 +41,40 @@ def open_youtube():
     webbrowser.open("https://www.youtube.com")
     return "Ich öffne Youtube"
 
+def listen():
+    recognizer=sr.Recognizer()
+
+    with sr.Microphone() as source:
+        print("Ich höre...")
+        audio=recognizer.listen(source)
+
+    try:
+        text=recognizer.recognize_google(audio, language="de-DE")
+        print("Du:", text)
+        return text
+    except:
+        print("Ich habe dich nicht verstanden")
+        return ""
+
 while True:
 
-    user_input=input("Du:")
+    user_input=listen()
 
-    if user_input.lower() == "exit":
+    text = user_input.lower()
+
+    if "exit" in text or "beenden" in text or "stop" in text:
         print("Nova: Bis bald!")
+        speak("Okay, ich fahre runter")
         break
+
+    if user_input.strip()=="":
+        continue
+
+    if any(word in user_input.lower() for word in ["uhr","zeit","spät"]):
+        result=get_time()
+        print("Nova:",result)
+        speak(result)
+        continue
 
     conversation.append(f"Du: {user_input}")
 
@@ -60,7 +95,6 @@ while True:
     result = None
 
     if any(word in user_input.lower() for word in ["uhr", "zeit", "spät"]):
-        print("DEBUG: direkte Zeit")
         result = get_time()
 
     elif "{" in reply:
@@ -89,3 +123,4 @@ if result is None:
     conversation.append(f"Nova: {str(result)}")
         
     print("Nova:",result)
+    speak(result)
