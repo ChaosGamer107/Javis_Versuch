@@ -1,14 +1,13 @@
 import requests
 import pygame
-import os
 import time
 
 pygame.mixer.init()
 
-API_KEY = os.getenv("ELEVEN_API_KEY")
+API_KEY = "sk_eb3b1f8943208773108aefe8456301426c4746273f297efc"
 
 def speak(text):
-    url = "https://api.elevenlabs.io/v1/text-to-speech/MGG5Irb57ATHvyIeTEYo"
+    url = "https://api.elevenlabs.io/v1/text-to-speech/BnNQr9Ga1RxUGlZEeAoa"
 
     headers = {
         "xi-api-key": API_KEY,
@@ -28,7 +27,8 @@ def speak(text):
 
     response = requests.post(url, json=data, headers=headers)
 
-    # 🔥 WICHTIG
+    print("Content-Type:", response.headers.get("content-type"))
+
     if response.status_code != 200:
         print("API Fehler:", response.status_code)
         print(response.text)
@@ -40,10 +40,7 @@ def speak(text):
     pygame.mixer.music.load("voice.mp3")
     pygame.mixer.music.play()
 
-    import time
     while pygame.mixer.music.get_busy():
         time.sleep(0.1)
 
 speak("Systemprüfung abgeschlossen. Alle Funktionen arbeiten innerhalb der Parameter.")
-
-print(response.headers.get("content-type"))

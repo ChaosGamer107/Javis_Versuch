@@ -4,6 +4,7 @@ import webbrowser
 import json
 import speech_recognition as sr
 import pygame
+import time
 
 pygame.mixer.init()
 
@@ -31,32 +32,36 @@ Wenn keine Aktion nötig ist:
 def speak(text):
     import requests
 
-    url ="https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
+    url ="https://api.elevenlabs.io/v1/text-to-speech/BnNQr9Ga1RxUGlZEeAoa"
 
     headers={
-        "xi-api-key":"8b73ef4ebe1d8087f29f5c5be99ae4995cd4241f3a1116c3955601224d2631ed",
+        "xi-api-key":"sk_eb3b1f8943208773108aefe8456301426c4746273f297efc",
         "Content-Type":"application/json"
     }
 
     data={
         "text":text,
-        "voice_setting":{
+        "voice_settings":{
             "stability":0.5,
             "similarity_boost":0.7
         }
     }
-    
-    response=requests.post( url,json=data,headers=headers)
 
+    response=requests.post( 
+        url,
+        json=data,
+        headers=headers
+        )
+    
     with open("voice.mp3","wb")as f:
         f.write(response.content)
 
     pygame.mixer.music.load("voice.mp3")
-    pygame.mixer.music.play
+    pygame.mixer.music.play()
 
     while pygame.mixer.music.get_busy():
-        continue    
-    
+        time.sleep(0.1)
+        
 def get_time():
     now = datetime.now()
     print("DEBUG SYSTEM TIME:", now)
@@ -71,7 +76,7 @@ def listen():
 
     with sr.Microphone() as source:
         print("Ich höre...")
-        audio=recognizer.listen(source)
+        audio=recognizer.listen(source, phrase_time_limit=5)
 
     try:
         text=recognizer.recognize_google(audio, language="de-DE")
@@ -105,6 +110,17 @@ while True:
 
     full_prompt="\n".join(conversation)+"\nNova:"
 
+    response=requests.post( 
+        "http://localhost:11434/api/generate",
+        json={
+            "model":"llama3",
+            "prompt":full_prompt,
+            "stream":False
+        }
+        )
+    
+    data=response.json()
+
     reply=data["response"].strip()
 
     result = None
@@ -125,17 +141,19 @@ while True:
 
             if action == "youtube":
                 result = open_youtube()
+                print("Nova:",result)
+            speak(result)
 
         except:
             pass
                 
 
 
-if result is None:
-    print("DEBUG: normale KI Antwort")
-    result = reply
+    if result is None:
+        print("DEBUG: normale KI Antwort")
+        result = reply
 
-    conversation.append(f"Nova: {str(result)}")
+        conversation.append(f"Nova: {str(result)}")
         
-    print("Nova:",result)
-    speak(result)
+        print("Nova:",result)
+        speak(result)
