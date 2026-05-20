@@ -5,32 +5,82 @@ import json
 import speech_recognition as sr
 import pygame
 import time
+import os
+from win32com.client import Dispatch
+
+programs={}
+
+start_menu_paths = [
+    r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs",
+    os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs")
+]
+
+shell=Dispatch("WScript.Shell")
+
+for start_menu in start_menu_paths:
+
+    for root, dirs, files in os.walk(start_menu):
+        for file in files:
+            if file.endswith(".lnk"):
+
+                path=os.path.join(root,file)
+
+                try:
+                    shortcut=shell.CreateShortCut(path)
+
+                    name=file.replace(".lnk", "").lower()
+
+                    programs[name]=path
+
+                except Exception as e:
+                    print("Fehler:",e)
+                    
 
 pygame.mixer.init()
+
+voice_id=0
 
 print("Nova ist bereit")
 
 conversation=[
-    """Du bist eine KI namens Nova.
+"""
+Du bist eine KI namens Nova.
 
-Wenn der User eine Aktion will, antworte nur in JSON:
+Nur wenn eine echte Aktion nötig ist,
+antworte mit JSON.
 
+Beispiele:
 {"action":"time"}
-oder
 {"action":"youtube"}
+{"action":"open_app","app":"spotify"}
 
-WICHTIG:
--kein extra Text
--Nur JSON
--Keine Erklärung
+Für normale Gespräche:
+→ antworte normal auf Deutsch
 
-Wenn keine Aktion nötig ist:
--> Antworte normal
+KEIN JSON bei normalen Gesprächen.
 """
 ]
 
+def open_app(app_name):
+    
+    app_name=app_name.lower()
+
+    for program in programs:
+        
+        if app_name in program:
+            try:
+               os.startfile(programs[program])
+               return f"Ich öffne {program}"
+                
+            except Exception as e:
+               print("STARTFEHLER:", e)
+               return "Fehler beim öffnen"
+    
+
+
 def speak(text):
-    import requests
+
+    global voice_id
 
     url ="https://api.elevenlabs.io/v1/text-to-speech/BnNQr9Ga1RxUGlZEeAoa"
 
@@ -47,16 +97,15 @@ def speak(text):
         }
     }
 
-    response=requests.post( 
-        url,
-        json=data,
-        headers=headers
-        )
-    
-    with open("voice.mp3","wb")as f:
+    response=requests.post(url, json=data, headers=headers)
+
+    filename=f"voice_{voice_id}.mp3"
+    voice_id += 1
+
+    with open(filename,"wb") as f:
         f.write(response.content)
 
-    pygame.mixer.music.load("voice.mp3")
+    pygame.mixer.music.load(filename)
     pygame.mixer.music.play()
 
     while pygame.mixer.music.get_busy():
@@ -134,15 +183,15 @@ while True:
             end = reply.rfind("}") + 1
             json_str = reply[start:end]
 
-            print("DEBUG JSON:", json_str)
-
             parsed = json.loads(json_str)
             action = parsed.get("action")
 
             if action == "youtube":
                 result = open_youtube()
-                print("Nova:",result)
-            speak(result)
+
+            if action == "open_app":
+                app=parsed.get("app")
+                result=open_app(app)
 
         except:
             pass
@@ -150,7 +199,6 @@ while True:
 
 
     if result is None:
-        print("DEBUG: normale KI Antwort")
         result = reply
 
         conversation.append(f"Nova: {str(result)}")
