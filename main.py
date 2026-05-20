@@ -42,22 +42,32 @@ voice_id=0
 
 print("Nova ist bereit")
 
-conversation=[
+conversation = [
 """
 Du bist eine KI namens Nova.
 
-Nur wenn eine echte Aktion nötig ist,
-antworte mit JSON.
+WENN der Nutzer:
+- ein Programm öffnen will
+- Youtube öffnen will
+- die Uhrzeit wissen will
+
+Dann antworte NUR mit JSON.
 
 Beispiele:
+
 {"action":"time"}
+
 {"action":"youtube"}
+
 {"action":"open_app","app":"spotify"}
 
-Für normale Gespräche:
-→ antworte normal auf Deutsch
+WICHTIG:
+- KEIN zusätzlicher Text
+- NUR JSON
+- keine Erklärungen
 
-KEIN JSON bei normalen Gesprächen.
+Bei normalen Gesprächen:
+→ normale Antwort auf Deutsch
 """
 ]
 
@@ -68,13 +78,20 @@ def open_app(app_name):
     for program in programs:
         
         if app_name in program:
+
+            print("Gefunden:",program)
+            print("Pfad:",program[programs])
+
             try:
                os.startfile(programs[program])
+               print("Gestartet")
                return f"Ich öffne {program}"
                 
             except Exception as e:
                print("STARTFEHLER:", e)
                return "Fehler beim öffnen"
+            
+    return "Programm nicht gefunden"
     
 
 
@@ -171,6 +188,7 @@ while True:
     data=response.json()
 
     reply=data["response"].strip()
+    print("DEBUG REPLY:", reply)
 
     result = None
 
@@ -188,13 +206,17 @@ while True:
 
             if action == "youtube":
                 result = open_youtube()
+                print("Nova:",result)
+                speak(result)
 
             if action == "open_app":
                 app=parsed.get("app")
                 result=open_app(app)
+                print("Nova:",result)
+                speak(result)
 
-        except:
-            pass
+        except Exception as e:
+            print("Fehler:",e)
                 
 
 
