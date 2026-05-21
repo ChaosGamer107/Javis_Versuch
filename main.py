@@ -10,32 +10,26 @@ from win32com.client import Dispatch
 
 programs={}
 
-start_menu_paths = [
-    r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs",
-    os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs")
+search_paths=[
+    r"C:\Program Files",
+    r"C:\Program Files (x86)",
+    os.path.expandvars(r"%LOCALAPPDATA%"),
 ]
 
-shell=Dispatch("WScript.Shell")
-
-for start_menu in start_menu_paths:
-
-    for root, dirs, files in os.walk(start_menu):
+for base_path in search_paths:
+    for root, dirs, files in os.walk(base_path):
         for file in files:
-            if file.endswith(".lnk"):
+            if file.endswith(".exe"):
+                name=file.replace(".exe","").lower()
+                full_path=os.path.join(root,file)
 
-                path=os.path.join(root,file)
-
-                try:
-                    shortcut=shell.CreateShortCut(path)
-
-                    name=file.replace(".lnk", "").lower()
-
-                    programs[name]=path
-
-                except Exception as e:
-                    print("Fehler:",e)
+                if "uninstall" in name:
+                    continue
+                
+                if name not in programs:
+                    programs[name]=full_path
                     
-
+                    
 pygame.mixer.init()
 
 voice_id=0
@@ -78,9 +72,6 @@ def open_app(app_name):
     for program in programs:
         
         if app_name in program:
-
-            print("Gefunden:",program)
-            print("Pfad:",program[programs])
 
             try:
                os.startfile(programs[program])
