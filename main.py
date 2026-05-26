@@ -182,6 +182,7 @@ while True:
     print("DEBUG REPLY:", reply)
 
     result = None
+    action = None
 
     if any(word in user_input.lower() for word in ["uhr", "zeit", "spät"]):
         result = get_time()
@@ -199,12 +200,14 @@ while True:
                 result = open_youtube()
                 print("Nova:",result)
                 speak(result)
+                continue
 
             if action == "open_app":
                 app=parsed.get("app")
                 result=open_app(app)
                 print("Nova:",result)
                 speak(result)
+                continue
 
         except Exception as e:
             print("Fehler:",e)
@@ -214,7 +217,8 @@ while True:
     if result is None:
         result = reply
 
-        conversation.append(f"Nova: {str(result)}")
+        if not reply.startswith("{"):
+            conversation.append(f"Nova: {str(result)}")
         
-        print("Nova:",result)
-        speak(result)
+        print("Nova:",reply)
+        speak(reply)
