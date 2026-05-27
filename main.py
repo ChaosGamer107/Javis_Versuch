@@ -38,16 +38,12 @@ print("Nova ist bereit")
 
 conversation = [
 """
-Du bist eine KI namens Nova.
+Du bist Nova.
 
-WENN der Nutzer:
-- ein Programm öffnen will
-- Youtube öffnen will
-- die Uhrzeit wissen will
+WENN eine Aktion nötig ist,
+antworte AUSSCHLIESSLICH mit gültigem JSON.
 
-Dann antworte NUR mit JSON.
-
-Beispiele:
+ERLAUBTE FORMATE:
 
 {"action":"time"}
 
@@ -56,12 +52,15 @@ Beispiele:
 {"action":"open_app","app":"spotify"}
 
 WICHTIG:
-- KEIN zusätzlicher Text
-- NUR JSON
-- keine Erklärungen
+- Nur gültiges JSON
+- Keine Erklärungen
+- Kein extra Text
+- Kein Markdown
+- Keine Emojis
+- Keine Kommentare
 
 Bei normalen Gesprächen:
-→ normale Antwort auf Deutsch
+→ normale deutsche Antwort
 """
 ]
 
@@ -165,7 +164,7 @@ while True:
 
     conversation.append(f"Du: {user_input}")
 
-    full_prompt="\n".join(conversation)+"\nNova:"
+    full_prompt="\n".join(conversation[-10:])+"\nNova:"
 
     response=requests.post( 
         "http://localhost:11434/api/generate",
@@ -184,41 +183,41 @@ while True:
     result = None
     action = None
 
-    if any(word in user_input.lower() for word in ["uhr", "zeit", "spät"]):
-        result = get_time()
+    if "{" in reply:
 
-    elif "{" in reply:
         try:
             start = reply.find("{")
-            end = reply.rfind("}") + 1
-            json_str = reply[start:end]
+            end = reply.rfind("}")+1
 
+            json_str = reply[start:end]
+            json_str = json_str.replace("'", '"')
+            print("JSON STRING:", json_str)
             parsed = json.loads(json_str)
             action = parsed.get("action")
+            print("ACTION:",action)
 
             if action == "youtube":
                 result = open_youtube()
                 print("Nova:",result)
                 speak(result)
+                conversation.append(f"Nova hat Youtube geöffnet.")
                 continue
 
-            if action == "open_app":
-                app=parsed.get("app")
-                result=open_app(app)
+            elif action == "open_app":
+                app = parsed.get("app")
+                result = open_app(app)
                 print("Nova:",result)
                 speak(result)
+                conversation.append(f"Nova hat erfolgreich {app} geöffnet.")
                 continue
 
         except Exception as e:
-            print("Fehler:",e)
-                
+            print("Fehler:", e)
 
 
-    if result is None:
         result = reply
 
         if not reply.startswith("{"):
             conversation.append(f"Nova: {str(result)}")
-        
-        print("Nova:",reply)
-        speak(reply)
+            print("Nova:",reply)
+            speak(reply)
