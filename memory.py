@@ -1,25 +1,56 @@
-import json
-import os
+import sqlite3
 
-MEMORY_FILE = "data/memory.json"
+DB_NAME = "nova.db"
 
-def load_memory():
-
-    if not os.path.exists(MEMORY_FILE):
-        return {}
-    with open(MEMORY_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+def init_db():
+   
+    conn = sqlite3.connect(DB_NAME)
     
-def save_memory(memory):
+    cursor = conn.cursor()
 
-    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(memory, f, indent=4, ensure_ascii=False)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS memories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT,
+            content TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
 
-def remember(key, value, memory):
+def add_memory(memory_type, content):
 
-    memory[key] = value
-    save_memory(memory)
+    conn = sqlite3.connect(DB_NAME)
 
-def recall(key, memory):
+    cursor = conn.cursor()
 
-    return memory.get(key)
+    cursor.execute(
+        """
+        INSERT INTO memories(type, content)
+        VALUES(?, ?)
+        """,
+        (memory_type, content)
+    )
+
+    conn.commit()
+    conn.close()
+
+def get_memories():
+
+    conn = sqlite3.connect(DB_NAME)
+
+    cursor = conn.cursor()
+
+    cursor.execute( """
+    SELECT type, content
+    FROM memories
+    ORDER BY id DESC
+    """)
+
+    memories = cursor.fetchall()
+
+    conn.close()
+
+    return memories

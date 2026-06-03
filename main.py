@@ -7,7 +7,7 @@ import pygame
 import time
 import os
 from win32com.client import Dispatch
-from memory import load_memory, save_memory, remember, recall
+from memory import init_db, add_memory, get_memories
 
 programs={}
 
@@ -143,84 +143,11 @@ def listen():
         print("Ich habe dich nicht verstanden")
         return ""
 
-memory = load_memory()
+init_db
 
 while True:
 
     user_input=listen()
-
-    if "mein name ist" in user_input.lower():
-        name = user_input.lower().replace("mein name ist", "").strip()
-        memory["name"] = name
-        save_memory(memory)
-        result=f"Okay, ich merke mir deinen Namen {name}"
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    if "wie heiße ich" in user_input.lower():
-        name = memory.get("name")
-        if name:
-         result=f"Du heißt {name}"
-        else:
-            result="Ich weiß nicht, wie du heißt."
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    if "mein Lieblingsspiel ist" in user_input.lower():
-        game = user_input.lower().replace("mein Lieblingsspiel ist", "").strip()
-        remember("favorite_game", game, memory)
-        result=f"Okay, ich merke mir dein Lieblingsspiel {game}"
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    if "was ist mein Lieblingsspiel" in user_input.lower():
-        game = recall("favorite_game", memory)
-        if game:
-         result=f"Dein Lieblingsspiel ist {game}"
-        else:
-            result="Ich weiß nicht, was dein Lieblingsspiel ist."
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    if "meine Lieblingsfarbe ist" in user_input.lower():
-        color = user_input.lower().replace("meine Lieblingsfarbe ist", "").strip()
-        remember("favorite_color", color, memory)
-        result=f"Okay, ich merke mir deine Lieblingsfarbe {color}"
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    if "was ist meine Lieblingsfarbe" in user_input.lower():
-        color = recall("favorite_color", memory)
-        if color:
-         result=f"Deine Lieblingsfarbe ist {color}"
-        else:
-            result="Ich weiß nicht, was deine Lieblingsfarbe ist."
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    if "ich wohne in" in user_input.lower():
-        city = user_input.lower().replace("ich wohne in", "").strip()
-        remember("city", city, memory)
-        result=f"Okay, ich merke mir, dass du in {city} wohnst"
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    if "wo wohne ich" in user_input.lower():
-        city = recall("city", memory)
-        if city:
-         result=f"Du wohnst in {city}"
-        else:
-            result="Ich weiß nicht, wo du wohnst."
-        print("Nova:",result)
-        speak(result)
-        continue
 
     text = user_input.lower()
 
