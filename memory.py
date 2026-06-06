@@ -54,3 +54,26 @@ def get_memories():
     conn.close()
 
     return memories
+
+def search_memories(keyword):
+    
+    conn=sqlite3.connect(DB_NAME)
+
+    cursor=conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT content
+        FROM memories
+        WHERE content LIKE ?
+        ORDER BY id DESC
+        LIMIT 5
+        """,
+        (f"%{keyword}%")
+    )
+
+    rows=cursor.fetchall()
+
+    conn.close()
+    return rows
+

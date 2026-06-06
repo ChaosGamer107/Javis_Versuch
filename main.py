@@ -7,7 +7,7 @@ import pygame
 import time
 import os
 from win32com.client import Dispatch
-from memory import init_db, add_memory, get_memories
+from memory import init_db, add_memory, get_memories, search_memories
 
 programs={}
 
@@ -149,7 +149,43 @@ while True:
 
     user_input=listen()
 
+    important_phrases=[
+        "mein name ist",
+        "ich wohne in",
+        "mein Lieblingspiel ist",
+        "meine lieblingsfarbe ist",
+        "mein hund heißt",
+        "meine katze heißt"
+    ]
+
+    for phrase in important_phrases:
+        if phrase in user_input.lower():
+
+            add_memory(
+                "personal",
+                user_input
+            )
+
+            print("MEMORY GESPEICHERT")
+
     text = user_input.lower()
+
+    if "erinnerst du dich" in user_input.lower():
+        keyword=user_input.lower().replace(
+            "erinnerst du dich",
+            ""
+        ).strip()
+
+        memories=search_memories(keyword)
+
+        if memories:
+            result=memories[0][0]
+        else:
+            result="Dazu habe ich nichts gespeichert."
+
+        print("Nova:", result)
+        speak(result)
+        continue
 
     if "exit" in text or "beenden" in text or "stop" in text:
         print("Nova: Bis bald!")
@@ -168,6 +204,10 @@ while True:
     conversation.append(f"Du: {user_input}")
 
     full_prompt="\n".join(conversation[-10:])+"\nNova:"
+
+    print("PROMPT:")
+    print(full_prompt)
+    print("-"*50)
 
     response=requests.post( 
         "http://localhost:11434/api/generate",
@@ -198,6 +238,9 @@ while True:
             parsed = json.loads(json_str)
             action = parsed.get("action")
             print("ACTION:",action)
+
+            if action is None:
+                print("UNBEKANNTE JSON ANTWORT")
 
             if action == "youtube":
                 result = open_youtube()
