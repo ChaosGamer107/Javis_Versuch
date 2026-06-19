@@ -1,34 +1,20 @@
 import requests
+import json
 
 conversation = [
 """
 Du bist Nova.
-
-WENN eine Aktion nötig ist,
-antworte AUSSCHLIESSLICH mit gültigem JSON.
-
-ERLAUBTE FORMATE:
-
-{"action":"time"}
-
-{"action":"youtube"}
-
-{"action":"open_app","app":"spotify"}
-
-WICHTIG:
-- Nur gültiges JSON
-- Keine Erklärungen
-- Kein extra Text
-- Kein Markdown
-- Keine Emojis
-- Keine Kommentare
 
 Bei normalen Gesprächen:
 → normale deutsche Antwort
 """
 ]
 
-def aks_llama(user_input):
+def ask_llama(user_input):
+
+    conversation.append(f"Du: {user_input}")
+
+    full_prompt="\n".join(conversation[-10:])+"\nNova:"
 
     response=requests.post( 
         "http://localhost:11434/api/generate",
@@ -41,7 +27,10 @@ def aks_llama(user_input):
     
     data=response.json()
 
-    return data["response"].strip()
+    reply=data["response"].strip()
 
-full_prompt="\n".join(conversation[-10:])+"\nNova:"
+    conversation.append(f"Nova: {reply}")
+
+    return reply
+
 

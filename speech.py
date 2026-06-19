@@ -1,5 +1,7 @@
-import speech_recognitonition as sr
+import speech_recognition as sr
 import pygame
+import requests
+import time
 
 pygame.mixer.init()
 

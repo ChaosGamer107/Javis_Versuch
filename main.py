@@ -1,21 +1,10 @@
-from datetime import datetime
-import webbrowser
 import json
 import speech_recognition as sr
 import time
 from win32com.client import Dispatch
-from memory import init_db, add_memory, get_memories, search_memories
+from memory import init_db, add_memory, get_memories, search_memorie
 
 print("Nova ist bereit")
-        
-def get_time():
-    now = datetime.now()
-    print("DEBUG SYSTEM TIME:", now)
-    return f"Es ist {now.strftime('%H:%M:%S')} Uhr"
-
-def open_youtube():
-    webbrowser.open("https://www.youtube.com")
-    return "Ich öffne Youtube"
 
 init_db
 
@@ -44,38 +33,7 @@ while True:
 
     text = user_input.lower()
 
-    if "erinnerst du dich" in user_input.lower():
-        keyword=user_input.lower().replace(
-            "erinnerst du dich",
-            ""
-        ).strip()
-
-        memories=search_memories(keyword)
-
-        if memories:
-            result=memories[0][0]
-        else:
-            result="Dazu habe ich nichts gespeichert."
-
-        print("Nova:", result)
-        speak(result)
-        continue
-
-    if "exit" in text or "beenden" in text or "stop" in text:
-        print("Nova: Bis bald!")
-        speak("Okay, ich fahre runter")
-        break
-
-    if user_input.strip()=="":
-        continue
-
-    if any(word in user_input.lower() for word in ["uhr","zeit","spät"]):
-        result=get_time()
-        print("Nova:",result)
-        speak(result)
-        continue
-
-    conversation.append(f"Du: {user_input}")
+   
 
     result = None
     action = None
@@ -125,6 +83,5 @@ while True:
         result = reply
 
         if not reply.startswith("{"):
-            conversation.append(f"Nova: {str(result)}")
             print("Nova:",reply)
             speak(reply)

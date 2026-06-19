@@ -17,11 +17,11 @@ def load_programs():
                     name=file.replace(".exe","").lower()
                     full_path=os.path.join(root,file)
 
-                if "uninstall" in name:
-                    continue
+                    if "uninstall" in name:
+                        continue
                 
-                if name not in programs:
-                    programs[name]=full_path
+                    if name not in programs:
+                        programs[name]=full_path
 
 def open_app(app_name):
     
@@ -41,3 +41,5 @@ def open_app(app_name):
                return "Fehler beim öffnen"
             
     return "Programm nicht gefunden"
+
+print(f"{len(programs)} Programme geladen")
