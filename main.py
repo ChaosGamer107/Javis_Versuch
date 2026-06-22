@@ -1,87 +1,97 @@
 import json
-import speech_recognition as sr
-import time
-from win32com.client import Dispatch
-from memory import init_db, add_memory, get_memories, search_memorie
+from speech import listen, speak
+from ai import ask_llama
+from apps import open_app
+from commands import get_time, open_youtube
+from memory import init_db, add_memory, get_memories, search_memories, get_latest_memory
 
 print("Nova ist bereit")
 
-init_db
+init_db()
 
 while True:
 
-    user_input=listen()
-
     important_phrases=[
-        "mein name ist",
+         "mein name ist",
         "ich wohne in",
-        "mein Lieblingspiel ist",
+        "mein lieblingsspiel ist",
         "meine lieblingsfarbe ist",
         "mein hund heißt",
         "meine katze heißt"
     ]
 
     for phrase in important_phrases:
-        if phrase in user_input.lower():
+        if phrase in text:
+              
+              add_memory(
+                   "personal",
+                   user_input
+              )
 
-            add_memory(
-                "personal",
-                user_input
-            )
+              print("MEMORY GESPEICHERT")
 
-            print("MEMORY GESPEICHERT")
+        if "erinnerst du dich" in text:
+         
+         keyword=text.replace(
+              "erinnerst du dich",
+              ""
+         ).strip()
+
+        memories=search_memories(keyword)
+
+        if memories:
+            result=memories[0][0]
+        else:
+            result="Dazu habe ich nichts gespeichert."
+
+        print("Nova:", result)
+        speak(result)
+        continue
+
+    if any(word in text for word in ["uhr","zeit","spät"]):
+
+        result=get_time()
+
+        print("Nova:", result)
+        speak(result)
+        continue
+
+    if "youtube" in text:
+
+        result=open_youtube()
+
+        print("Nova:", result)
+        speak(result)
+        continue
+
+    if text.startswith("öffne"):
+
+        app=text.replace("öffne","").strip()
+
+        result=open_app()
+
+        print("Nova:", result)
+        speak(result)
+        continue
+
+
+
+    user_input=listen()
+
+    user_input=listen()
+
+    if user_input.strip() == "":
+          continue
 
     text = user_input.lower()
 
-   
 
     result = None
     action = None
 
-    if "{" in reply:
+    result = reply
 
-        try:
-            start = reply.find("{")
-            end = reply.rfind("}")+1
-
-            json_str = reply[start:end]
-            json_str = json_str.replace("'", '"')
-            print("JSON STRING:", json_str)
-            parsed = json.loads(json_str)
-            action = parsed.get("action")
-            print("ACTION:",action)
-
-            if action is None:
-                print("UNBEKANNTE JSON ANTWORT")
-
-            if action == "youtube":
-                result = open_youtube()
-                print("Nova:",result)
-                speak(result)
-                conversation.append(f"Nova hat Youtube geöffnet.")
-                continue
-
-            if action == "time":
-                result = get_time()
-                print("Nova:",result)
-                speak(result)
-                conversation.append(f"Nova hat die Zeit angegeben.")
-                continue
-
-            elif action == "open_app":
-                app = parsed.get("app")
-                result = open_app(app)
-                print("Nova:",result)
-                speak(result)
-                conversation.append(f"Nova hat erfolgreich {app} geöffnet.")
-                continue
-
-        except Exception as e:
-            print("Fehler:", e)
-
-
-        result = reply
-
-        if not reply.startswith("{"):
-            print("Nova:",reply)
-            speak(reply)
+    if "exit" in text or "beenden" in text or "stop" in text:
+         print("Nova: Bis bald!")
+         speak("Okay, ich fahre runter")
+         break

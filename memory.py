@@ -69,7 +69,7 @@ def search_memories(keyword):
         ORDER BY id DESC
         LIMIT 5
         """,
-        (f"%{keyword}%")
+        (f"%{keyword}%",)
     )
 
     rows=cursor.fetchall()
@@ -77,3 +77,35 @@ def search_memories(keyword):
     conn.close()
     return rows
 
+def delete_memory(memory_id):
+    
+    conn = sqlite3.connect(DB_NAME)
+
+    cursor = conn.cursor
+
+    cursor.execute(
+        "DELETE FROM memories WHERE id=?",
+        (memory_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+def get_latest_memory():
+
+    conn=sqlite3.connect(DB_NAME)
+
+    cursor=conn.cursor
+
+    cursor.execute("""
+    SELECT content
+    FROM memories
+    ORDER BY id DESC
+    LIMIT 1
+    """)
+
+    row=cursor.fetchone()
+
+    conn.close()
+
+    return row
