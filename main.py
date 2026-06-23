@@ -1,7 +1,8 @@
 import json
 from speech import listen, speak
 from ai import ask_llama
-from apps import open_app
+from apps import open_app, load_programs
+load_programs()
 from commands import get_time, open_youtube
 from memory import init_db, add_memory, get_memories, search_memories, get_latest_memory
 
@@ -20,6 +21,16 @@ while True:
         "meine katze heißt"
     ]
 
+    user_input=listen()
+
+    text = user_input.lower()
+    
+    result = None
+    action = None
+
+    if user_input.strip() == "":
+          continue
+    
     for phrase in important_phrases:
         if phrase in text:
               
@@ -30,12 +41,12 @@ while True:
 
               print("MEMORY GESPEICHERT")
 
-        if "erinnerst du dich" in text:
+    if "erinnerst du dich" in text:
          
-         keyword=text.replace(
-              "erinnerst du dich",
-              ""
-         ).strip()
+        keyword=text.replace(
+            "erinnerst du dich",
+            ""
+        ).strip()
 
         memories=search_memories(keyword)
 
@@ -68,30 +79,21 @@ while True:
 
         app=text.replace("öffne","").strip()
 
-        result=open_app()
+        result=open_app(app)
 
         print("Nova:", result)
         speak(result)
         continue
 
+    reply=ask_llama(user_input)
 
+    print("Nova:",reply)
 
-    user_input=listen()
-
-    user_input=listen()
-
-    if user_input.strip() == "":
-          continue
-
-    text = user_input.lower()
-
-
-    result = None
-    action = None
+    speak(reply)
 
     result = reply
 
-    if "exit" in text or "beenden" in text or "stop" in text:
+    if "exit" in text or "beenden" in text or "stopp" in text:
          print("Nova: Bis bald!")
          speak("Okay, ich fahre runter")
          break

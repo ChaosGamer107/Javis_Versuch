@@ -23,6 +23,8 @@ def load_programs():
                     if name not in programs:
                         programs[name]=full_path
 
+                    print(f"{len(programs)} Programme geladen")
+
 def open_app(app_name):
     
     app_name=app_name.lower()
@@ -41,5 +43,3 @@ def open_app(app_name):
                return "Fehler beim öffnen"
             
     return "Programm nicht gefunden"
-
-print(f"{len(programs)} Programme geladen")
