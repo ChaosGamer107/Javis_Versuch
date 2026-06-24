@@ -4,7 +4,7 @@ from ai import ask_llama
 from apps import open_app, load_programs
 load_programs()
 from commands import get_time, open_youtube
-from memory import init_db, add_memory, get_memories, search_memories, get_latest_memory
+from memory import init_db, add_memory, get_memories, search_memories, save_fact, get_fact
 
 print("Nova ist bereit")
 

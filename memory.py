@@ -9,11 +9,9 @@ def init_db():
     cursor = conn.cursor()
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS memories (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT,
-            content TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        CREATE TABLE IF NOT EXISTS facts (
+           key TEXT PRIMARY KEY,
+            value TEXT
         )
     """)
     
@@ -91,21 +89,35 @@ def delete_memory(memory_id):
     conn.commit()
     conn.close()
 
-def get_latest_memory():
+def save_fact(key,value):
 
     conn=sqlite3.connect(DB_NAME)
-
-    cursor=conn.cursor
+    cursor=conn.cursor()
 
     cursor.execute("""
-    SELECT content
-    FROM memories
-    ORDER BY id DESC
-    LIMIT 1
-    """)
+        INSERT OR REPLACE INTO facts(key,value)
+        VALUES(?,?)
+    """,(key, value))
+    
+    conn.commit()
+    conn.close()
+
+def get_fact(key):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        SELECT value
+        FROM facts
+        WHERE key=?
+    """,(key,))
 
     row=cursor.fetchone()
 
-    conn.close()
+    conn.close
 
-    return row
+    if row:
+        return row[0]
+    
+    return None
