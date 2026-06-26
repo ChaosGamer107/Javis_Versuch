@@ -4,7 +4,8 @@ from ai import ask_llama
 from apps import open_app, load_programs
 load_programs()
 from commands import get_time, open_youtube
-from memory import init_db, add_memory, get_memories, search_memories, save_fact, get_fact
+from memory import init_db, add_memory, get_memories, search_memories, save_fact, get_fact, get_all_facts, delete_fact, clear_facts,get_recent_memories, clear_memories
+from memory_ai import analyze_memory
 
 print("Nova ist bereit")
 
@@ -22,6 +23,41 @@ while True:
     ]
 
     user_input=listen()
+
+    memory_action=analyze_memory(user_input)
+
+    if memory_action["action"]=="update_fact":
+
+        save_fact(
+            memory_action["key"],
+            memory_action["value"]
+        )
+
+        print("FACT gespeichert")
+
+        continue
+
+    elif memory_action["action"]=="save_memory":
+
+        add_memory(
+            "personal",
+            memory_action["content"]
+        )
+
+        print("MEMORY gespeichert")
+        
+        continue
+
+    elif memory_action["action"]=="delete_fact":
+
+        delete_fact(memory_action["key"])
+
+        print("FACT gelöscht")
+
+        continue
+    
+
+
 
     text = user_input.lower()
     
@@ -94,6 +130,4 @@ while True:
     result = reply
 
     if "exit" in text or "beenden" in text or "stopp" in text:
-         print("Nova: Bis bald!")
-         speak("Okay, ich fahre runter")
          break
