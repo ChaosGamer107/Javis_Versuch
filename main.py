@@ -6,6 +6,7 @@ load_programs()
 from commands import get_time, open_youtube
 from memory import init_db, add_memory, get_memories, search_memories, save_fact, get_fact, get_all_facts, delete_fact, clear_facts,get_recent_memories, clear_memories
 from memory_ai import analyze_memory
+from tool import execute_tool
 
 print("Nova ist bereit")
 
@@ -95,31 +96,14 @@ while True:
         speak(result)
         continue
 
-    if any(word in text for word in ["uhr","zeit","spät"]):
+    arguments=parsed.copy()
+    arguments.pop("action", None)
 
-        result=get_time()
+    result=execute_tool(action,arguments)
 
-        print("Nova:", result)
-        speak(result)
-        continue
-
-    if "youtube" in text:
-
-        result=open_youtube()
-
-        print("Nova:", result)
-        speak(result)
-        continue
-
-    if text.startswith("öffne"):
-
-        app=text.replace("öffne","").strip()
-
-        result=open_app(app)
-
-        print("Nova:", result)
-        speak(result)
-        continue
+    print("Nova:", result)
+    speak(result)
+    
 
     reply=ask_llama(user_input)
 
