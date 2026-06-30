@@ -2,32 +2,34 @@ import json
 from speech import listen, speak
 from ai import ask_llama
 from apps import open_app, load_programs
-load_programs()
-from commands import get_time, open_youtube
-from memory import init_db, add_memory, get_memories, search_memories, save_fact, get_fact, get_all_facts, delete_fact, clear_facts,get_recent_memories, clear_memories
+from memory import (init_db, add_memory, delete_fact)
 from memory_ai import analyze_memory
-from tool import execute_tool
+from tools import execute_tool
 
-print("Nova ist bereit")
+print("Nova startet...")
 
 init_db()
+load_programs()
+
+print("Nova ist bereit!")
 
 while True:
 
-    important_phrases=[
-         "mein name ist",
-        "ich wohne in",
-        "mein lieblingsspiel ist",
-        "meine lieblingsfarbe ist",
-        "mein hund heißt",
-        "meine katze heißt"
-    ]
-
     user_input=listen()
+
+    if user_input.strip()=="":
+        continue
+
+    text = user_input.lower()
+
+    if "exit" in text or "beenden" in text or "stopp" in text:
+         break
 
     memory_action=analyze_memory(user_input)
 
     if memory_action["action"]=="update_fact":
+
+        from memory import save_fact
 
         save_fact(
             memory_action["key"],
@@ -35,8 +37,6 @@ while True:
         )
 
         print("FACT gespeichert")
-
-        continue
 
     elif memory_action["action"]=="save_memory":
 
@@ -46,72 +46,38 @@ while True:
         )
 
         print("MEMORY gespeichert")
-        
-        continue
 
     elif memory_action["action"]=="delete_fact":
 
         delete_fact(memory_action["key"])
 
         print("FACT gelöscht")
-
-        continue
     
-
-
-
-    text = user_input.lower()
-    
-    result = None
-    action = None
-
-    if user_input.strip() == "":
-          continue
-    
-    for phrase in important_phrases:
-        if phrase in text:
-              
-              add_memory(
-                   "personal",
-                   user_input
-              )
-
-              print("MEMORY GESPEICHERT")
-
-    if "erinnerst du dich" in text:
-         
-        keyword=text.replace(
-            "erinnerst du dich",
-            ""
-        ).strip()
-
-        memories=search_memories(keyword)
-
-        if memories:
-            result=memories[0][0]
-        else:
-            result="Dazu habe ich nichts gespeichert."
-
-        print("Nova:", result)
-        speak(result)
-        continue
-
-    arguments=parsed.copy()
-    arguments.pop("action", None)
-
-    result=execute_tool(action,arguments)
-
-    print("Nova:", result)
-    speak(result)
-    
-
     reply=ask_llama(user_input)
 
-    print("Nova:",reply)
+    print("DEBUG:",reply)
 
+    if reply.startwith("{"):
+
+        try:
+
+            parsed=json.loads(reply)
+
+            action=parsed["action"]
+
+            arguments=parsed.copy()
+            arguments.pop("action",None)
+
+            result=execute_tool(action,arguments)
+
+            print(result)
+            speak(result)
+
+            continue
+
+        except Exception as e:
+
+            print("JSON Fehler:",e)
+
+    print("Nova:", reply)
     speak(reply)
-
-    result = reply
-
-    if "exit" in text or "beenden" in text or "stopp" in text:
-         break

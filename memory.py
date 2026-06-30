@@ -9,28 +9,53 @@ def init_db():
     cursor = conn.cursor()
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS facts (
-           key TEXT PRIMARY KEY,
-            value TEXT
-        )
+    CREATE TABLE IF NOT EXISTS facts(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT UNIQUE,
+        value TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
     """)
-    
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS memories(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT,
+        content TEXT,
+        importance INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS conversations(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        speaker TEXT,
+        message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS settings(
+        key TEXT PRIMARY KEY,
+        value TEXT
+    )
+    """)
+
     conn.commit()
     conn.close()
 
-def add_memory(memory_type, content):
+def add_memory(memory_type, content, importance=1):
 
     conn = sqlite3.connect(DB_NAME)
 
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
-        INSERT INTO memories(type, content)
-        VALUES(?, ?)
-        """,
-        (memory_type, content)
-    )
+    cursor.execute("""
+        INSERT INTO memories(type, content, importance)
+        VALUES(?, ?, ?)
+        """,(memory_type, content, importance))
 
     conn.commit()
     conn.close()
@@ -66,13 +91,12 @@ def search_memories(keyword):
         WHERE content LIKE ?
         ORDER BY id DESC
         LIMIT 5
-        """,
-        (f"%{keyword}%",)
-    )
+        """,(f"%{keyword}%",))
 
     rows=cursor.fetchall()
 
     conn.close()
+    
     return rows
 
 def delete_memory(memory_id):
@@ -85,81 +109,6 @@ def delete_memory(memory_id):
         DELETE FROM memories 
         WHERE id=?",
     """,(memory_id,))
-
-    conn.commit()
-    conn.close()
-
-def save_fact(key,value):
-
-    conn=sqlite3.connect(DB_NAME)
-    cursor=conn.cursor()
-
-    cursor.execute("""
-        INSERT OR REPLACE INTO facts(key,value)
-        VALUES(?,?)
-    """,(key, value))
-    
-    conn.commit()
-    conn.close()
-
-def get_fact(key):
-
-    conn=sqlite3.connect(DB_NAME)
-    cursor=conn.cursor()
-
-    cursor.execute("""
-        SELECT value
-        FROM facts
-        WHERE key=?
-    """,(key,))
-
-    row=cursor.fetchone()
-
-    conn.close
-
-    if row:
-        return row[0]
-    
-    return None
-
-def get_all_facts():
-
-    conn=sqlite3.connect(DB_NAME)
-    cursor=conn.cursor()
-
-    cursor.execute("""
-        SELECT key, value
-        FROM facts
-        ORDER BY key
-    """)
-
-    rows=cursor.fetchall()
-
-    conn.close()
-
-    return rows
-
-def delete_fact(key):
-
-    conn=sqlite3.connect(DB_NAME)
-    cursor=conn.cursor()
-
-    cursor.execute("""
-        DELETE FROM facts
-        WHERE key=?
-    """,(key,))
-
-    conn.commit()
-    conn.close()
-
-def clear_facts():
-
-    conn=sqlite3.connect(DB_NAME)
-    cursor=conn.cursor()
-
-    cursor.execute("""
-        DELETE FROM facts
-    """)
 
     conn.commit()
     conn.close()
@@ -193,3 +142,124 @@ def clear_memories():
 
     conn.commit()
     conn.close()
+
+def save_fact(key,value):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO facts(key, value)
+        VALUES(?, ?)
+        ON CONFLICT(key)
+        DO UPDATE SET
+            value = excluded.value,
+            updated_at = CURRENT_TIMESTAMP
+    """,(key, value))
+    
+    conn.commit()
+    conn.close()
+
+def get_fact(key):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        SELECT value
+        FROM facts
+        WHERE key=?
+    """,(key,))
+
+    row=cursor.fetchone()
+
+    conn.close
+
+    return row[0] if row else None
+
+def get_all_facts():
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        SELECT key, value
+        FROM facts
+    """)
+
+    rows=cursor.fetchall()
+
+    conn.close()
+
+    return rows
+
+def delete_fact(key):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM facts
+        WHERE key=?
+    """,(key,))
+
+    conn.commit()
+    conn.close()
+
+def clear_facts():
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM facts
+    """)
+
+    conn.commit()
+    conn.close()
+
+def add_conversation(speaker, message):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO conversations(speaker,message)
+        VALUES(?, ?)
+    """,(speaker, message))
+    
+    conn.commit()
+    conn.close()
+
+def get_recent_conversations(limit=20):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        SELECT speaker,message
+        FROM conversations
+        ORDER BY id DESC
+        LIMIT ?
+    """,(limit,))
+
+    rows=cursor.fetchall()
+
+    conn.close
+
+    return rows[::-1]
+
+def clear_conversations():
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM conversations
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+
