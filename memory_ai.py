@@ -1,65 +1,169 @@
 import json
 import requests
+from memory import get_all_facts
+
+SYSTEM_PROMPT="""
+    Du bist das Gedächtnis einer KI namens Nova.
+
+    Deine Aufgabe ist NUR zu entscheiden, ob Informationen gespeichert,
+    geändert oder gelöscht werden sollen.
+
+    Antworte IMMER ausschließlich mit gültigem JSON.
+
+    Mögliche Antworten:
+
+    Keine Aktion:
+
+    {"action":"none"}
+
+    Fakt speichern oder ändern:
+
+    {
+        "action":"update_fact",
+        "key":"name",
+        "value":"Paul"
+    }
+
+    Erinnerung speichern:
+
+    {
+        "action":"save_memory",
+        "content":"Der Nutzer war heute im Kino."
+    }
+
+    Fakt löschen:
+
+    {
+        "action":"delete_fact",
+        "key":"name"
+    }
+
+    Regeln:
+
+    - Namen -> key = "name"
+    - Alter -> key = "age"
+    - Lieblingsspiel -> key = "favorite_game"
+    - Lieblingsfarbe -> key = "favorite_color"
+    - Wohnort -> key = "city"
+    - Beruf -> key = "job"
+
+    Speichere Fakten auch dann, wenn sie indirekt gesagt werden.
+
+    Beispiele:
+
+    "Ich heiße Paul."
+    →
+    {
+        "action":"update_fact",
+        "key":"name",
+        "value":"Paul"
+    }
+
+    "Mein Name ist Paul."
+    → update_fact
+
+    "Du kannst mich Paul nennen."
+    → update_fact
+
+    "Ich bin 18."
+    →
+    {
+        "action":"update_fact",
+        "key":"age",
+        "value":"18"
+    }
+
+    "Ich spiele am liebsten Minecraft."
+    →
+    {
+        "action":"update_fact",
+        "key":"favorite_game",
+        "value":"Minecraft"
+    }
+
+    "Ich mag Minecraft."
+    → favorite_game
+
+    "Blau ist meine Lieblingsfarbe."
+    → favorite_color
+
+    "Ich wohne in Berlin."
+    → city
+
+    "Vergiss meinen Namen."
+    →
+    {
+        "action":"delete_fact",
+        "key":"name"
+    }
+
+    "Ich war heute im Kino."
+    →
+    {
+        "action":"save_memory",
+        "content":"Der Nutzer war heute im Kino."
+    }
+
+    Wenn nichts gespeichert werden soll:
+
+    {
+        "action":"none"
+    }
+
+    Zusätzlich kannst du allgemeines Wissen über den Nutzer speichern.
+
+    Beispiel:
+
+    "Ich programmiere gerne."
+
+    {
+        "action":"save_semantic_memory",
+        "content":"Der Nutzer programmiert gerne."
+    }
+
+    "Ich entwickle gerade einen Sprachassistenten."
+
+    {
+        "action":"save_semantic_memory",
+        "content":"Der Nutzer entwickelt einen Sprachassistenten."
+    }
+
+    Speichere Dinge, die langfristig nützlich sind, als semantic_memory.
+"""
 
 def analyze_memory(user_input):
 
+    facts=get_all_facts()
+
+    fact_text=""
+
+    for key, value in facts:
+        fact_text+=f"{key}:{value}\n "
+
     prompt=f"""
-    Du bist ein System zur Analyse von Nutzeraussagen.
+    {SYSTEM_PROMPT}
 
-    Deine Aufgabe:
-    Entscheide, ob der Nutzer:
+    Bereits bekannte Informationen:
 
-    - eine Tatsache über sich sagt (FACT)
-    - eine Erinnerung sagt (MEMORY)
-    - etwas löschen will (DELETE)
-    - oder nichts davon ist
+    {fact_text}
 
-    Antworte AUSSCHLIESSLICH im JSON Format.
+    Wenn der Nutzer einen vorhandenen Fakt ändert,
+    liefere wieder "update_fact" mit dem neuen Wert.
 
-    ---
+    Wenn der Nutzer sagt, dass etwas vergessen werden soll,
+    liefere "delete_fact".
 
-    FACT (dauerhafte Information):
-    - Name
-    - Wohnort
-    - Alter
-    - Lieblingsspiel
-    - Hobbys
+    Wenn bereits derselbe Wert gespeichert ist,
+    antworte mit:
 
-    Format:
-    {{
-    "action": "update_fact",
-    "key": "name",
-    "value": "Paul"
-    }}
+    {{"action":"none"}}
 
-    ---
+    Nutzer:
 
-    MEMORY (Erlebnis / Ereignis):
-    {{
-    "action": "save_memory",
-    "content": "Ich habe heute Pizza gegessen"
-    }}
-
-    ---
-
-    DELETE (löschen):
-    {{
-    "action": "delete_fact",
-    "key": "name"
-    }}
-
-    ---
-
-    NICHTS:
-    {{
-        "action": "nothing"
-    }}
-
-    ---
-
-    USER:
     {user_input}
-    """
+
+    JSON:
+"""
 
     response=requests.post(
          "http://localhost:11434/api/generate",
@@ -72,8 +176,15 @@ def analyze_memory(user_input):
 
     reply=response.json()["response"].strip()
 
+    print("MEMORY AI:",reply)
+
     try:
-        return json.loads(reply)
+        start=reply.find("{")
+        end=reply.rfind("}")+1
+
+        return json.loads(reply[start:end])
     
-    except:
-        return{"action":"nothing"}
+    except Exception:
+
+        return{"action":"none"}
+        

@@ -43,6 +43,14 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS semantic_memory(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -119,9 +127,9 @@ def get_recent_memories(limit=10):
     cursor=conn.cursor()
 
     cursor.execute("""
-        SELECT content
+        SELECT type, content, importance, created_at
         FROM memories
-        ORDER BY id DESC
+        ORDER BY importance DESC, id DESC
         LIMIT ?
     """,(limit,))
 
@@ -261,5 +269,64 @@ def clear_conversations():
     conn.commit()
     conn.close()
 
+def add_semantic_memory(content):
 
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
 
+    cursor.execute("""
+        INSERT INTO semantic_memory(content)
+        VALUES(?)
+    """,(content,))
+
+    conn.commit()
+    conn.close()
+
+def search_semantic_memory(keyword):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        SELECT content
+        FROM semantic_memory
+        WHERE content LIKE ?
+        ORDER BY id DESC
+        LIMIT 10            
+    """,(f"%{keyword}%",))
+
+    rows=cursor.fetchall()
+
+    conn.close()
+
+    return rows
+
+def get_recent_semantic_memory(limit=10):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        SELECT content
+        FROM semantic_memory
+        ORDER BY id DESC
+        LIMIT ?
+    """,(limit,))
+
+    rows=cursor.fetchall()
+
+    conn.close()
+
+    return rows
+
+def clear_semantic_memory():
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM semantic_memory
+    """)
+
+    conn.commit()
+    conn.close()

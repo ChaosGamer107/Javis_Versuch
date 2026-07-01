@@ -2,7 +2,7 @@ import json
 from speech import listen, speak
 from ai import ask_llama
 from apps import open_app, load_programs
-from memory import (init_db, add_memory, delete_fact)
+from memory import init_db, add_memory, delete_fact, add_semantic_memory
 from memory_ai import analyze_memory
 from tools import execute_tool
 
@@ -52,6 +52,14 @@ while True:
         delete_fact(memory_action["key"])
 
         print("FACT gelöscht")
+
+    elif memory_action["action"]=="save_semantic_memory":
+
+        add_semantic_memory(
+            memory_action["content"]
+        )
+
+        print("SEMANTIC MEMORY gespeichert")
     
     reply=ask_llama(user_input)
 
