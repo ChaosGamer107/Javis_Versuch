@@ -1,6 +1,7 @@
 import requests
 import json
-from memory import get_all_facts, get_recent_memories 
+from memory import get_all_facts, get_recent_conversations, get_relevant_context, add_conversation
+from personality import build_personality
 
 conversation = []
 
@@ -9,55 +10,49 @@ def ask_llama(user_input):
     global conversation
 
     facts=get_all_facts()
+    context=get_relevant_context()
+    conversations=get_recent_conversations()
 
     fact_text=""
 
     for key, value in facts:
         fact_text+=f"{key}: {value}\n"
 
-    memories=get_recent_memories()
 
-    memory_text=""
+    context_text=""
 
-    for memory in memories:
-        memory_text+=f"-{memory[0]}\n"
+    for item in context:
+        context_text+=f"-{item}\n"
 
-    conversation.append(f"User: {user_input}")
 
-    conversation_text="\n".join(conversation[-10])
+    conversation_text=""
+
+    for speaker, message in conversations:
+        conversation_text+=f"{speaker}:{message}\n"
+
+    
 
     prompt=f"""
-        Du bist Nova.
+       {build_personality()}
 
-        Bekannte Informationen über den Nutzer:
+        Bekannte Fakten:
 
-        {fact_text}
-
-        Letzte Erinnerungen:
-
-        {memory_text}
-
-        Antworte natürlich.
-        Nutze die Informationen nur, wenn sie relevant sind.
-
-        User:
-        {user_input}
-
-        Nova:
+        ...
         """
 
     response=requests.post( 
         "http://localhost:11434/api/generate",
         json={
             "model":"llama3",
-            "prompt":full_prompt,
+            "prompt":prompt,
             "stream":False
         }
         )
     
     reply=response.json()["response"].strip()
 
-    conversation.append(f"Nova: {reply}")
+    add_conversation("User",user_input)
+    add_conversation("Nova",reply)
 
     return reply
 

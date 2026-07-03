@@ -330,3 +330,50 @@ def clear_semantic_memory():
 
     conn.commit()
     conn.close()
+
+def get_relevant_context(user_input):
+
+    conn=sqlite3.connect(DB_NAME)
+    cursor=conn.cursor()
+
+    words=user_input.lower().split()
+
+    results=[]
+
+    for word in words:
+
+        cursor.execute("""
+            SELECT key, value
+            FROM facts
+            WHERE key LIKE ?
+            OR value LIKE ?
+        """,(f"%{word}%",f"%{word}%"))
+
+        results.extend(cursor.fetchall())
+
+    for word in words:
+
+        cursor.execute("""
+            SELECT content
+            FROM memories
+            WHERE content LIKE ?
+            LIMIT 5
+        """,(f"%{word}%",))
+
+        results.extend(cursor.fetchall())
+
+    for word in words:
+
+        cursor.execute("""
+            SELECT content
+            FROM semantic_memory
+            WHERE content LIKE ?
+            LIMIT 5
+        """,(f"%{word}%",))
+
+        results.extend(cursor.fetchall())
+
+   
+    conn.close()
+
+    return results
