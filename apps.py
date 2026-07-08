@@ -1,4 +1,5 @@
 import os
+from tool_registry import register_tool
 
 programs={}
 
@@ -43,3 +44,14 @@ def open_app(app_name):
                return "Fehler beim öffnen"
             
     return "Programm nicht gefunden"
+
+def start_app(app):
+
+    return open_app(app)
+
+register_tool(
+    name="open_app",
+    description="Öffnet installierte Programme auf dem Computer.",
+    parameters=["app"],
+    function=start_app
+)

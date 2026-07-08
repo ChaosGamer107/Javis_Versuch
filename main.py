@@ -1,10 +1,10 @@
 import json
 from speech import listen, speak
 from ai import ask_llama
-from apps import open_app, load_programs
 from memory import init_db, add_memory, delete_fact, add_semantic_memory
 from memory_ai import analyze_memory
-from tools import execute_tool
+import skills
+from tools_registry import execute_tool
 
 print("Nova startet...")
 

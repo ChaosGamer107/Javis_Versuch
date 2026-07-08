@@ -2,10 +2,13 @@ import requests
 import json
 from memory import get_all_facts, get_recent_conversations, get_relevant_context, add_conversation
 from personality import build_personality
+from tool_registry import get_tool_discription
 
 conversation = []
 
 def ask_llama(user_input):
+
+    tool_text=get_tool_discription()
 
     global conversation
 
@@ -35,9 +38,36 @@ def ask_llama(user_input):
     prompt=f"""
        {build_personality()}
 
+        Verfügbare Werkzeuge:
+
+        {tool_text}
+
+        Wenn ein Werkzeug benötigt wird,
+        antworte ausschließlich mit JSON.
+
+        Beispiel:
+
+        {{"action":"time"}}
+
+        {{"action":"open_app","app":"spotify"}}
+
         Bekannte Fakten:
 
-        ...
+        {fact_text}
+
+        Relevante Informationen:
+
+        {context_text}
+
+        Letzte Unterhaltung:
+
+        {conversation_text}
+
+        User:
+
+        {user_input}
+
+        Nova:
         """
 
     response=requests.post( 
