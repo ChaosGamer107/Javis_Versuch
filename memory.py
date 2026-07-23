@@ -1,6 +1,5 @@
 import sqlite3
-
-DB_NAME = "database/nova.db"
+from config import DB_NAME
 
 def init_db():
    

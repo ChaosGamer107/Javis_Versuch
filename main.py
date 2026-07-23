@@ -4,18 +4,20 @@ from ai import ask_llama
 from memory import init_db, add_memory, delete_fact, add_semantic_memory
 from memory_ai import analyze_memory
 import skills
-from tools_registry import execute_tool
+from tool_registry import execute_tool
+from conversation import analyze_conversation, save_last_question
 
 print("Nova startet...")
 
 init_db()
-load_programs()
 
 print("Nova ist bereit!")
 
 while True:
 
     user_input=listen()
+
+    analyze_conversation(user_input)
 
     if user_input.strip()=="":
         continue
@@ -89,3 +91,6 @@ while True:
 
     print("Nova:", reply)
     speak(reply)
+
+    if "?" in reply:
+        save_last_question(reply)

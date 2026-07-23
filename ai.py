@@ -3,6 +3,8 @@ import json
 from memory import get_all_facts, get_recent_conversations, get_relevant_context, add_conversation
 from personality import build_personality
 from tool_registry import get_tool_discription
+from config import OLLAMA_URL, MODEL
+from conversation import get_conversation_context
 
 conversation = []
 
@@ -34,23 +36,13 @@ def ask_llama(user_input):
         conversation_text+=f"{speaker}:{message}\n"
 
     
+    conversation_context=get_conversation_context()
 
     prompt=f"""
        {build_personality()}
 
-        Verfügbare Werkzeuge:
-
-        {tool_text}
-
-        Wenn ein Werkzeug benötigt wird,
-        antworte ausschließlich mit JSON.
-
-        Beispiel:
-
-        {{"action":"time"}}
-
-        {{"action":"open_app","app":"spotify"}}
-
+       {conversation_context} 
+       
         Bekannte Fakten:
 
         {fact_text}
@@ -71,9 +63,9 @@ def ask_llama(user_input):
         """
 
     response=requests.post( 
-        "http://localhost:11434/api/generate",
+        OLLAMA_URL,
         json={
-            "model":"llama3",
+            "model":MODEL,
             "prompt":prompt,
             "stream":False
         }

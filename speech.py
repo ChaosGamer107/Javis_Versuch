@@ -2,6 +2,7 @@ import speech_recognition as sr
 import pygame
 import requests
 import time
+from config import ELEVELABS_API_KEY, VOICE_ID, LANGUAGE, PHRASE_TIME_LIMIT
 
 pygame.mixer.init()
 
@@ -12,10 +13,10 @@ def listen():
 
     with sr.Microphone() as source:
         print("Ich höre...")
-        audio=recognizer.listen(source, phrase_time_limit=5)
+        audio=recognizer.listen(source, phrase_time_limit=PHRASE_TIME_LIMIT)
 
     try:
-        text=recognizer.recognize_google(audio, language="de-DE")
+        text=recognizer.recognize_google(audio, language=LANGUAGE)
         print("Du:", text)
         return text
     except:
@@ -26,10 +27,10 @@ def speak(text):
 
     global voice_id
 
-    url ="https://api.elevenlabs.io/v1/text-to-speech/BnNQr9Ga1RxUGlZEeAoa"
+    url ="https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
 
     headers={
-        "xi-api-key":"sk_eb3b1f8943208773108aefe8456301426c4746273f297efc",
+        "xi-api-key":"ELEVENLABS_API_KEY",
         "Content-Type":"application/json"
     }
 
