@@ -6,6 +6,7 @@ from memory_ai import analyze_memory
 import skills
 from tool_registry import execute_tool
 from conversation import analyze_conversation, save_last_question
+from conversation_engine import improve_reply
 
 print("Nova startet...")
 
@@ -64,6 +65,8 @@ while True:
         print("SEMANTIC MEMORY gespeichert")
     
     reply=ask_llama(user_input)
+
+    reply=improve_reply(user_input, reply)
 
     print("DEBUG:",reply)
 

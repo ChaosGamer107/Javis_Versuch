@@ -5,6 +5,8 @@ from personality import build_personality
 from tool_registry import get_tool_discription
 from config import OLLAMA_URL, MODEL
 from conversation import get_conversation_context
+from reasoning import build_reasoning
+from planner import create_plan
 
 conversation = []
 
@@ -38,28 +40,49 @@ def ask_llama(user_input):
     
     conversation_context=get_conversation_context()
 
+    reasoning=build_reasoning(user_input)
+
+    plan=create_plan(user_input)
+
     prompt=f"""
-       {build_personality()}
 
-       {conversation_context} 
-       
-        Bekannte Fakten:
+{build_personality()}
 
-        {fact_text}
+Interner Plan:
 
-        Relevante Informationen:
+Ziel:
+{plan["goal"]}
 
-        {context_text}
+Gesprächsart:
+{plan["conversation_type"]}
 
-        Letzte Unterhaltung:
+Soll eine Rückfrage gestellt werden ?:
+{plan["should_ask_question"]}
 
-        {conversation_text}
+Nutze diesen Plan.
 
-        User:
+{reasoning}
 
-        {user_input}
+{conversation_context} 
+        
+Bekannte Fakten:
 
-        Nova:
+{fact_text}
+
+Relevante Informationen:
+
+{context_text}
+
+Letzte Unterhaltung:
+
+{conversation_text}
+
+User:
+
+{user_input}
+
+Nova:
+        
         """
 
     response=requests.post( 
