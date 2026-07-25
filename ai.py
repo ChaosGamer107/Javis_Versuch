@@ -4,9 +4,12 @@ from memory import get_all_facts, get_recent_conversations, get_relevant_context
 from personality import build_personality
 from tool_registry import get_tool_discription
 from config import OLLAMA_URL, MODEL
-from conversation import get_conversation_context
+from conversation_state import get_conversation_context
 from reasoning import build_reasoning
 from planner import create_plan
+from conversation_analyzer import analyze_conversation
+from brain import think
+from memory_selector import select_memory
 
 conversation = []
 
@@ -16,7 +19,7 @@ def ask_llama(user_input):
 
     global conversation
 
-    facts=get_all_facts()
+    facts=select_memory(user_input)
     context=get_relevant_context()
     conversations=get_recent_conversations()
 
@@ -40,48 +43,67 @@ def ask_llama(user_input):
     
     conversation_context=get_conversation_context()
 
-    reasoning=build_reasoning(user_input)
+    brain=think(user_input)
 
-    plan=create_plan(user_input)
+    analysis=brain["analysis"]
+    reasoning=brain["reasoning"]
+    plan=brain["plan"]
 
     prompt=f"""
 
-{build_personality()}
+    {build_personality()}
 
-Interner Plan:
+    Gesprächsanalyse:
 
-Ziel:
-{plan["goal"]}
+        Gesprächsart:
+        {analysis["type"]}
 
-Gesprächsart:
-{plan["conversation_type"]}
+        Emotion:
+        {analysis["emotion"]}
 
-Soll eine Rückfrage gestellt werden ?:
-{plan["should_ask_question"]}
+        Rückfrage stellen:
+        {analysis["should_aks_question"]}
 
-Nutze diesen Plan.
+        Memory benutzen:
+        {analysis["should_use_memory"]}
 
-{reasoning}
+        Antwortlänge:
+        {analysis["answer_length"]}
 
-{conversation_context} 
-        
-Bekannte Fakten:
+    Interner Plan:
 
-{fact_text}
+        Ziel:
+        {plan["goal"]}
 
-Relevante Informationen:
+        Gesprächsart:
+        {plan["conversation_type"]}
 
-{context_text}
+        Soll eine Rückfrage gestellt werden ?:
+        {plan["should_ask_question"]}
 
-Letzte Unterhaltung:
+        Nutze diesen Plan.
 
-{conversation_text}
+    {reasoning}
 
-User:
+    {conversation_context} 
+            
+    Bekannte Fakten:
 
-{user_input}
+    {fact_text}
 
-Nova:
+    Relevante Informationen:
+
+    {context_text}
+
+    Letzte Unterhaltung:
+
+    {conversation_text}
+
+    User:
+
+    {user_input}
+
+    Nova:
         
         """
 
