@@ -1,6 +1,6 @@
 import requests
 import json
-from memory import get_all_facts, get_recent_conversations, get_relevant_context, add_conversation
+from memory import get_all_facts, get_recent_conversations, search_memories_semantic, add_conversation
 from personality import build_personality
 from tool_registry import get_tool_discription
 from config import OLLAMA_URL, MODEL
@@ -9,7 +9,6 @@ from reasoning import build_reasoning
 from planner import create_plan
 from conversation_analyzer import analyze_conversation
 from brain import think
-from memory_selector import select_memory
 
 conversation = []
 
@@ -17,10 +16,8 @@ def ask_llama(user_input):
 
     tool_text=get_tool_discription()
 
-    global conversation
-
-    facts=select_memory(user_input)
-    context=get_relevant_context()
+    facts=get_all_facts(user_input)
+    context=search_memories_semantic()
     conversations=get_recent_conversations()
 
     fact_text=""
@@ -62,7 +59,7 @@ def ask_llama(user_input):
         {analysis["emotion"]}
 
         Rückfrage stellen:
-        {analysis["should_aks_question"]}
+        {analysis["should_ask_question"]}
 
         Memory benutzen:
         {analysis["should_use_memory"]}

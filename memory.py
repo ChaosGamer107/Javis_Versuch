@@ -1,5 +1,8 @@
 import sqlite3
+import json
+import numpy as np
 from config import DB_NAME
+from embeddings import create_embedding
 
 def init_db():
    
@@ -9,10 +12,8 @@ def init_db():
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS facts(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        key TEXT UNIQUE,
-        value TEXT,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        key TEXT PRIMARY KEY,
+        value TEXT
     )
     """)
 
@@ -21,48 +22,26 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT,
         content TEXT,
-        importance INTEGER DEFAULT 1,
+        embedding TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS conversations(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        speaker TEXT,
-        message TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS settings(
-        key TEXT PRIMARY KEY,
-        value TEXT
-    )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS semantic_memory(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    content TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
     conn.commit()
     conn.close()
 
-def add_memory(memory_type, content, importance=1):
+def add_memory(memory_type, content):
+
+    embedding=create_embedding(content)
 
     conn = sqlite3.connect(DB_NAME)
 
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO memories(type, content, importance)
+        INSERT INTO memories(type, content, embedding)
         VALUES(?, ?, ?)
-        """,(memory_type, content, importance))
+        """,(memory_type, content, json.dumps(embedding)))
 
     conn.commit()
     conn.close()
@@ -330,49 +309,38 @@ def clear_semantic_memory():
     conn.commit()
     conn.close()
 
-def get_relevant_context(user_input):
+def search_memories_semantic(query, top_k=5):
+
+    query_embedding=np.array(create_embedding(query))
 
     conn=sqlite3.connect(DB_NAME)
     cursor=conn.cursor()
 
-    words=user_input.lower().split()
+    cursor.execute("""
+    SELECT content, embedding
+    FROM memories
+  """)
 
-    results=[]
+    rows=cursor.fetchall()
 
-    for word in words:
-
-        cursor.execute("""
-            SELECT key, value
-            FROM facts
-            WHERE key LIKE ?
-            OR value LIKE ?
-        """,(f"%{word}%",f"%{word}%"))
-
-        results.extend(cursor.fetchall())
-
-    for word in words:
-
-        cursor.execute("""
-            SELECT content
-            FROM memories
-            WHERE content LIKE ?
-            LIMIT 5
-        """,(f"%{word}%",))
-
-        results.extend(cursor.fetchall())
-
-    for word in words:
-
-        cursor.execute("""
-            SELECT content
-            FROM semantic_memory
-            WHERE content LIKE ?
-            LIMIT 5
-        """,(f"%{word}%",))
-
-        results.extend(cursor.fetchall())
-
-   
     conn.close()
 
-    return results
+    if not rows:
+        return[]
+
+    similarities=[]
+
+    for content, embedding_json in rows:
+
+        embedding=np.array(json.loads(embedding))
+
+        similarity=np.dot(query_embedding, embedding) / (
+            np.linalg.norm(query_embedding)
+            * np.linalg.norm(embedding)
+        )
+
+        similarities.append((similarity, content))
+
+    similarities.sort(reverse=True)
+
+    return similarities[:top_k]
