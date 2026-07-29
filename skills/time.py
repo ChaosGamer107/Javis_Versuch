@@ -1,5 +1,5 @@
 from datetime import datetime
-from tool_registry import register_tool
+from apps.tool_registry import register_tool
 
 def get_time():
     

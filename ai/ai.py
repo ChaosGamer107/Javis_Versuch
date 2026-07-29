@@ -1,10 +1,10 @@
 import requests
 import json
-from memory import get_all_facts, get_recent_conversations, search_memories_semantic, add_conversation
+from memory.memory import get_all_facts, get_recent_conversations, search_memories_semantic, add_conversation
 from personality import build_personality
-from tool_registry import get_tool_discription
+from apps.tool_registry import get_tool_discription
 from config import OLLAMA_URL, MODEL
-from conversation_state import get_conversation_context
+from memory.conversation_state import get_conversation_context
 from reasoning import build_reasoning
 from planner import create_plan
 from conversation_analyzer import analyze_conversation

@@ -1,4 +1,4 @@
-from conversation import get_conversation_context
+from memory.conversation_state import get_conversation_context
 from memory import get_all_facts, get_recent_memories
 
 def build_reasoning(user_input):
