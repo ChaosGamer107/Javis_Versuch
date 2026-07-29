@@ -1,12 +1,13 @@
 import json
 from speech import listen, speak
 from ai import ask_llama
-from memory import init_db, add_memory, delete_fact, add_semantic_memory
-from memory_ai import analyze_memory
+from memory import init_db, add_memory, delete_fact, add_semantic_memory, save_fact
+from ai.memory_ai import analyze_memory
 import skills
-from tool_registry import execute_tool
-from conversation import analyze_conversation, save_last_question
-from conversation_engine import improve_reply
+from apps.tool_registry import execute_tool
+from memory.conversation_state import analyze_conversation, save_last_question
+from ai.conversation_engine import improve_reply
+from ai.response_generator import improve_response
 
 print("Nova startet...")
 
@@ -30,41 +31,47 @@ while True:
 
     memory_action=analyze_memory(user_input)
 
-    if memory_action["action"]=="update_fact":
-
-        from memory import save_fact
+    if memory_action["action"] == "update_fact":
 
         save_fact(
             memory_action["key"],
             memory_action["value"]
         )
 
-        print("FACT gespeichert")
+        message = f"Alles klar. Ich merke mir: {memory_action['key']} = {memory_action['value']}."
 
-    elif memory_action["action"]=="save_memory":
+        print("Nova:", message)
+        speak(message)
+
+    elif memory_action["action"] == "save_memory":
 
         add_memory(
             "personal",
             memory_action["content"]
         )
 
-        print("MEMORY gespeichert")
+        message = "Okay, das merke ich mir."
 
-    elif memory_action["action"]=="delete_fact":
+        print("Nova:", message)
+        speak(message)
 
-        delete_fact(memory_action["key"])
+    elif memory_action["action"] == "delete_fact":
 
-        print("FACT gelöscht")
-
-    elif memory_action["action"]=="save_semantic_memory":
-
-        add_semantic_memory(
-            memory_action["content"]
+        delete_fact(
+            memory_action["key"]
         )
 
-        print("SEMANTIC MEMORY gespeichert")
+        message = f"Alles klar. Ich habe {memory_action['key']} vergessen."
+
+        print("Nova:", message)
+        speak(message)
     
     reply=ask_llama(user_input)
+
+    reply=improve_response(
+        user_input,
+        reply
+    )
 
     reply=improve_reply(user_input, reply)
 
