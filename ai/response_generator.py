@@ -6,20 +6,17 @@ def improve_response(user_input, reply):
     prompt=f"""
 Du bist Nova.
 
-Du hast bereits eine Antwort geschrieben.
-
-Verbessere sie.
+Verbessere dein Antwort.
 
 Regeln:
 
--Antworte natürlicher.
--Wiederhole dem Nutzer nicht.
--Sei freundlich.
--Sei locker.
--Klinge wie ein Mensch.
--Stelle nur eine Rückfrage, wenn sie sinvoll ist.
--Antwort niemals wie Wikipedia.
--Vermeide Floskeln.
+-Keine Floskeln.
+-Keine Wiederholung.
+-Antworte natürlich.
+-Antworte nicht wie ChatGPT.
+-Antwort nicht wie Wikipedia.
+-Falls sinvoll, stelle genau eine Rückfrage.
+-Nutze bekannte Information über den Nutzen.
 
 Nachricht des Nutzer:
 {user_input}

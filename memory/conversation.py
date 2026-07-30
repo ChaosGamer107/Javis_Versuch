@@ -6,6 +6,10 @@ last_question=""
 last_user_message=""
 conversation_goal=""
 
+_current_topic=""
+_last_user_message=""
+_last_nova_message=""
+
 def analyze_conversations(user_input):
 
     global curren_topic
@@ -55,18 +59,21 @@ def save_last_question(question):
 def get_conversation_context():
 
     return f"""
-Aktuelles Thema:
-{curren_topic}
+Letzte Nachricht des Users:
+{_last_user_message}
 
-Gesprächmodus:
-{conversation_mode}
-
-Stimmung:
-{user_mood}
-
-Letzte Nachricht:
-{last_user_message}
-
-Letzte Frage von Nova:
-{last_question}
+Letzte Antwort von Nova:
+{_last_nova_message}
     """ 
+
+def update_conversation(user_message, nova_message):
+
+    global _last_user_message
+    global _last_nova_message
+
+    _last_user_message=user_message
+    _last_nova_message=nova_message
+
+
+
+ 

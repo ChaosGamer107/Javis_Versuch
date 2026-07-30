@@ -2,6 +2,7 @@ from conversation_analyzer import analyze_conversation
 from reasoning import build_reasoning
 from planner import create_plan
 
+
 def think(user_input):
 
     analysis=analyze_conversation(user_input)

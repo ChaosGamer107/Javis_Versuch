@@ -15,10 +15,12 @@ Schema:
 
 {{
     "type":"",
+    "goal":"",
     "emotion":"",
     "should_ask_question":false,
     "should_encourage":false,
     "should_use_memory":false,
+    "should_joke":false,
     "answer_length":""
 }}
 
@@ -72,9 +74,11 @@ Nachricht:
 
         return{
             "type":"chat",
+            "goal":"",
             "emotion":"neutral",
             "should_ask_question":False,
             "should_encourage":False,
             "should_use_memory":False,
+            "should_joke":False,
             "answer_length":"medium"
         }
