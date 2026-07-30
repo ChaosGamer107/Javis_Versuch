@@ -5,7 +5,7 @@ from memory import init_db, add_memory, delete_fact, add_semantic_memory, save_f
 from ai.memory_ai import analyze_memory
 import skills
 from apps.tool_registry import execute_tool
-from memory.conversation import analyze_conversation, save_last_question, update_conversation
+from memory.conversation import save_last_question, update_conversation
 from ai.conversation_engine import improve_reply
 from ai.response_generator import improve_response
 
@@ -18,8 +18,6 @@ print("Nova ist bereit!")
 while True:
 
     user_input=listen()
-
-    analyze_conversation(user_input)
 
     if user_input.strip()=="":
         continue

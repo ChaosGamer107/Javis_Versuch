@@ -1,70 +1,10 @@
-curren_topic="Allgemein"
+current_topic="Allgemein"
 conversation_mode="normal"
 user_mood="neutral"
-
 last_question=""
-last_user_message=""
-conversation_goal=""
-
-_current_topic=""
 _last_user_message=""
 _last_nova_message=""
-
-def analyze_conversations(user_input):
-
-    global curren_topic
-    global conversation_mode
-    global last_user_message
-    global conversation_goal
-
-    text=user_input.lower()
-
-    if any(word in text for word in [
-        "python",
-        "code",
-        "programm",
-        "programmieren",
-        "fehler",
-        "bug",
-        "nova"
-    ]):
-        curren_topic="Programmieren"
-        conversation_mode="coding"
-
-    elif any (word in text for word in [
-        "erkläre",
-        "was ist",
-        "warum",
-        "wie funktioniert"
-    ]):
-        curren_topic="Lernen"
-        conversation_mode="teaching"
-
-    elif any(word in text for word in [
-        "wie gehts",
-        "hallo",
-        "hi",
-        "na"
-    ]):
-        curren_topic="Smalltalk"
-        conversation_mode="chat"
-
-    else:
-        conversation_mode="normal"
-
-def save_last_question(question):
-    global last_question
-    last_question=question
-
-def get_conversation_context():
-
-    return f"""
-Letzte Nachricht des Users:
-{_last_user_message}
-
-Letzte Antwort von Nova:
-{_last_nova_message}
-    """ 
+conversation_goal=""
 
 def update_conversation(user_message, nova_message):
 
@@ -73,6 +13,81 @@ def update_conversation(user_message, nova_message):
 
     _last_user_message=user_message
     _last_nova_message=nova_message
+
+def get_conversation_context():
+
+    return f"""
+Aktuelles Thema:
+{current_topic}
+
+Gesprächsmodus:
+{conversation_mode}
+
+Gesprächsziel:
+{conversation_goal}
+
+Stimmung des Nutzer:
+{user_mood}
+    
+Letzte Nachricht des Users:
+{_last_user_message}
+
+Letzte Antwort von Nova:
+{_last_nova_message}
+    """ 
+
+def set_topic(topic):
+
+    global current_topic
+
+    current_topic=topic
+
+def get_topic():
+
+    return current_topic
+
+def set_mode(mode):
+
+    global conversation_mode
+
+    conversation_mode=mode
+
+def get_mode():
+
+    return conversation_mode
+
+def set_goal(goal):
+
+    global conversation_goal
+
+    conversation_goal=goal
+
+def get_goal():
+
+    return conversation_goal
+
+def set_user_mood(mood):
+
+    global user_mood
+
+    user_mood=mood
+
+def get_user_mood():
+
+    return user_mood
+
+def save_last_question(question):
+
+    global last_question
+
+    last_question=question
+
+def get_last_question():
+
+    return last_question
+
+
+
 
 
 

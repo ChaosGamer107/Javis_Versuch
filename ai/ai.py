@@ -4,7 +4,7 @@ from memory.memory import get_all_facts, get_recent_conversations, search_memori
 from personality import build_personality
 from apps.tool_registry import get_tool_discription
 from config import OLLAMA_URL, MODEL
-from memory.conversation import get_conversation_context
+from memory.conversation import get_conversation_context, get_goal, get_mode, get_topic, get_user_mood
 from reasoning import build_reasoning
 from planner import create_plan
 from conversation_analyzer import analyze_conversation
@@ -37,22 +37,38 @@ def ask_llama(user_input):
     for speaker, message in conversations:
         conversation_text+=f"{speaker}:{message}\n"
 
-    
-    conversation_context=get_conversation_context()
-
     brain=think(user_input)
 
     analysis=brain["analysis"]
     reasoning=brain["reasoning"]
     plan=brain["plan"]
 
+    conversation_context=get_conversation_context()
+
+    topic=get_topic()
+    mode=get_mode()
+    goal=get_goal()
+    mood=get_user_mood()
+
     prompt=f"""
 
     {build_personality()}
 
-    Aktueller Gesprächskontext:
-    
-    {conversation_text}
+    Gesprächszustand:
+
+        Aktuelles Thema:
+        {topic}
+
+        Gesprächsmodus:
+        {mode}
+
+        Gesprächsziel:
+        {goal}
+
+        Stimmung des Nutzers:
+        {mood}
+
+        {conversation_text}
 
     Gesprächsanalyse:
 
@@ -92,7 +108,8 @@ def ask_llama(user_input):
 
     {reasoning}
 
-    {conversation_context} 
+    Verfügbare Tools:
+    {tool_text}
             
     Bekannte Fakten:
 
