@@ -1,5 +1,5 @@
 import os
-from tool_registry import register_tool
+from Tools.tool_registry import register_tool
 
 programs={}
 
@@ -50,8 +50,7 @@ def start_app(app):
     return open_app(app)
 
 register_tool(
-    name="open_app",
-    description="Öffnet installierte Programme auf dem Computer.",
-    parameters=["app"],
-    function=start_app
+    "open_app",
+    start_app,
+    "Öffnet installierte Programme auf dem Computer."
 )

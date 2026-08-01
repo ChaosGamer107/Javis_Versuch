@@ -4,7 +4,7 @@ from ai import ask_llama
 from memory import init_db, add_memory, delete_fact, add_semantic_memory, save_fact
 from ai.memory_ai import analyze_memory
 import skills
-from apps.tool_registry import execute_tool
+from Tools.tool_registry import execute_tool
 from memory.conversation import save_last_question, update_conversation
 from ai.conversation_engine import improve_reply
 from ai.response_generator import improve_response

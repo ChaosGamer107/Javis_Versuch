@@ -1,5 +1,5 @@
 import webbrowser
-from apps.tool_registry import register_tool
+from Tools.tool_registry import register_tool
 
 def open_youtube():
     
@@ -8,8 +8,7 @@ def open_youtube():
     return "Ich öffne Youtube"
 
 register_tool(
-    name="youtube",
-    description="Öffnet YouTube im Browser.",
-    parameters=[],
-    function=open_youtube
+    "youtube",
+    open_youtube,
+    "Öffnet Youtube im Browser"
 )

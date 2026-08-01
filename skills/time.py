@@ -1,5 +1,5 @@
 from datetime import datetime
-from apps.tool_registry import register_tool
+from Tools.tool_registry import register_tool
 
 def get_time():
     
@@ -9,8 +9,7 @@ def get_time():
 
 
 register_tool(
-    name="time",
-    description="Gibt die aktuelle Uhrzeit zurück.",
-    paramters=[],
-    function=get_time
+    "time",
+    get_time,
+    "Gibt die aktuelle Uhrzeit an"
 )

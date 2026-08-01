@@ -2,7 +2,7 @@ import requests
 import json
 from memory.memory import get_all_facts, get_recent_conversations, search_memories_semantic, add_conversation
 from personality import build_personality
-from apps.tool_registry import get_tool_discription
+from Tools.tool_registry import get_tool_discription
 from config import OLLAMA_URL, MODEL
 from memory.conversation import get_conversation_context, get_goal, get_mode, get_topic, get_user_mood
 from reasoning import build_reasoning
