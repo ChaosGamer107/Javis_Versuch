@@ -15,12 +15,21 @@ Schema:
 
 {{
     "goal":"",
-    "needs_tool":false,
+    "conversation_type":"",
+    "use_memory":true,
+    "use_tools":false,
     "tool":"",
-    "memory_needed":false,
-    "should_ask_question":false,
-    "conversation_type":""
+    "continue_topic":true,
+    "ask_followup":false
 }}
+
+Regeln:
+
+-use_memory = Soll Nova Erinnerungen benutzen ?
+-use_tools = Muss ein Tool genutzt werden ?
+-tool = Name des Tools oder Leer
+-continue_topic = Soll das aktuell Thema fortgesetzt werden ?
+-ask_followup = Soll Nova eine Rückfrage stellen ?
 
 Nachricht:
 
@@ -45,10 +54,11 @@ Nachricht:
 
     except:
         return {
-            "goal":"",
-            "needs_tool":False,
+            "goal":"chat",
+            "conversation_type":"normal",
+            "use_memory":True,
+            "use_tools":False,
             "tool":"",
-            "memory_needed":False,
-            "should_aks_question":False,
-            "conversation_type":"normal"
+            "continue_topic":True,
+            "ask_followup":False
         }

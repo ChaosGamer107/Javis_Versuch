@@ -1,6 +1,6 @@
 import json
 from speech import listen, speak
-from ai import ask_llama
+from ai.ai import ask_llama
 from memory import init_db, add_memory, delete_fact, add_semantic_memory, save_fact
 from ai.memory_ai import analyze_memory
 import skills
