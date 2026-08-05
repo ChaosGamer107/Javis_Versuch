@@ -1,14 +1,14 @@
 from memory.conversation import get_conversation_context
-from memory import get_all_facts, get_recent_memories
+from memory.memory import get_all_facts, search_memories_semantic
 
 def build_reasoning(user_input):
 
     facts=get_all_facts()
-    memories=get_recent_memories()
+    memories=search_memories_semantic(user_input)
 
     thought=[]
 
-    thought.append("Interner Gedankengang:")
+    thought.append("Interner Plan:")
     thought.append("")
 
     thought.append("Gesprächskontext:")
@@ -28,14 +28,19 @@ def build_reasoning(user_input):
         thought.append("Relevante Erinnerungen:")
 
         for memory in memories:
-            thought.append(f"-{memory[0]}")
+
+            if isinstance(memory, (list, tuple)):
+                thought.append(f"- {memory[0]}")
+
+            else:
+                thought.append(f"- {memory}")
 
     thought.append("")
 
     thought.append(f"Neue Nachricht des Nutzers: {user_input}")
 
     thought.append("")
-    thought.append("Überlege:")
+    thought.append("Zu berücksichtigen:")
 
     thought.append("-Was möchte der Nutzer erreichen ?")
     thought.append("-Brauche ich ein Tool ?")

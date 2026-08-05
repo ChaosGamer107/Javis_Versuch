@@ -1,8 +1,8 @@
-from conversation_analyzer import analyze_conversation
-from reasoning import build_reasoning
-from planner import create_plan
-from ai import ask_llama
-from prompt_builder import build_prompt
+from ai.conversation_analyzer import analyze_conversation
+from ai.reasoning import build_reasoning
+from ai.planner import create_plan
+from ai.ai import ask_llama
+from ai.prompt_builder import build_prompt
 from memory.conversation import set_topic, set_goal, set_mode, set_user_mood, update_conversation
 from memory.memory import get_all_facts, get_recent_conversations, search_memories_semantic
 from tools.tool_registry import get_tool_discription

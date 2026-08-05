@@ -2,7 +2,7 @@ import sqlite3
 import json
 import numpy as np
 from config import DB_NAME
-from embeddings import create_embedding
+from memory.embeddings import create_embedding
 
 #----------------------------------
 #Datenbank

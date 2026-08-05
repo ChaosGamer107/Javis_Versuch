@@ -1,4 +1,4 @@
-from personality import build_personality
+from ai.personality import build_personality
 from memory.conversation import get_conversation_context
 
 def build_prompt(

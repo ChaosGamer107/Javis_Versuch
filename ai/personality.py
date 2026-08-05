@@ -1,4 +1,4 @@
-from emotion import get_emotion
+from ai.emotion import get_emotion
 
 def build_personality():
 

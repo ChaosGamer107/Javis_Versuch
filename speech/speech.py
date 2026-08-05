@@ -2,7 +2,7 @@ import speech_recognition as sr
 import pygame
 import requests
 import time
-from config import ELEVELABS_API_KEY, VOICE_ID, LANGUAGE, PHRASE_TIME_LIMIT
+from config import ELEVENLABS_API_KEY, VOICE_ID, LANGUAGE, PHRASE_TIME_LIMIT
 
 pygame.mixer.init()
 
