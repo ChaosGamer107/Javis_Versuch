@@ -33,7 +33,6 @@ def process(user_input):
         analysis,
         reasoning,
         plan,
-        context,
         facts,
         context,
         conversation,

@@ -16,12 +16,13 @@ def init_db():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS facts(
         key TEXT PRIMARY KEY,
-        value TEXT
+        value TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS memories(
+     CREATE TABLE IF NOT EXISTS memories(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT,
         content TEXT,
@@ -29,6 +30,25 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS conversations(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            speaker TEXT,
+            message TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("PRAGMA table_info(facts)")
+    fact_columns = [column[1] for column in cursor.fetchall()]
+
+    if "updated_at" not in fact_columns:
+        cursor.execute("""
+            ALTER TABLE facts
+            ADD COLUMN updated_at TIMESTAMP
+        """)
+
 
     conn.commit()
     conn.close()
@@ -39,13 +59,15 @@ def init_db():
 
 def add_semantic_memory(content):
 
+    embedding=create_embedding(content)
+
     conn=sqlite3.connect(DB_NAME)
     cursor=conn.cursor()
 
     cursor.execute("""
-        INSERT INTO semantic_memory(content)
-        VALUES(?)
-    """,(content,))
+        INSERT INTO memories(type, content, embedding)
+        VALUES(?, ?, ?)
+    """,("semantic", content, json.dumps(embedding)))
 
     conn.commit()
     conn.close()
@@ -57,11 +79,12 @@ def search_semantic_memory(keyword):
 
     cursor.execute("""
         SELECT content
-        FROM semantic_memory
-        WHERE content LIKE ?
+        FROM memories
+        WHERE type = ?
+        AND content LIKE ?
         ORDER BY id DESC
         LIMIT 10            
-    """,(f"%{keyword}%",))
+    """,("Semantic",f"%{keyword}%"))
 
     rows=cursor.fetchall()
 
@@ -76,10 +99,11 @@ def get_recent_semantic_memory(limit=10):
 
     cursor.execute("""
         SELECT content
-        FROM semantic_memory
+        FROM memories
+        WHERE type = ?
         ORDER BY id DESC
         LIMIT ?
-    """,(limit,))
+    """,("semantic", limit))
 
     rows=cursor.fetchall()
 
@@ -93,15 +117,19 @@ def clear_semantic_memory():
     cursor=conn.cursor()
 
     cursor.execute("""
-        DELETE FROM semantic_memory
-    """)
+        DELETE FROM memories
+        WHERE type = ?
+    """,("semantic",))
 
     conn.commit()
     conn.close()
 
 def search_memories_semantic(query, top_k=5):
 
-    query_embedding=np.array(create_embedding(query))
+    query_embedding=np.array(
+        create_embedding(query),
+        dtype=float
+    )
 
     conn=sqlite3.connect(DB_NAME)
     cursor=conn.cursor()
@@ -109,6 +137,7 @@ def search_memories_semantic(query, top_k=5):
     cursor.execute("""
     SELECT content, embedding
     FROM memories
+    WHERE embedding IS NOT NULL
   """)
 
     rows=cursor.fetchall()
@@ -120,18 +149,36 @@ def search_memories_semantic(query, top_k=5):
 
     similarities=[]
 
+    query_norm=np.linalg.norm(query_embedding)
+
+    if query_norm == 0:
+        return []
+
     for content, embedding_json in rows:
 
-        embedding=np.array(json.loads(embedding))
+        try:
 
-        similarity=np.dot(query_embedding, embedding) / (
-            np.linalg.norm(query_embedding)
-            * np.linalg.norm(embedding)
-        )
+            embedding=np.array(
+                json.loads(embedding_json),
+                dtype=float
+            )
 
-        similarities.append((similarity, content))
+            embedding_norm=np.linalg.norm(embedding)
 
-    similarities.sort(reverse=True)
+            if embedding_norm == 0:
+                continue
+
+            similarity = np.dot(query_embedding, embedding) / (query_norm * embedding_norm) 
+
+            similarities.append((float(similarity), content))
+
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+
+    similarities.sort(
+        key=lambda item: item[0],
+        reverse=True
+    )
 
     return similarities[:top_k]
 
@@ -146,7 +193,7 @@ def save_fact(key,value):
 
     cursor.execute("""
         INSERT INTO facts(key, value)
-        VALUES(?, ?)
+        VALUES(?, ?, CURRENT_TIMESTAMP)
         ON CONFLICT(key)
         DO UPDATE SET
             value = excluded.value,
@@ -181,6 +228,7 @@ def get_all_facts():
     cursor.execute("""
         SELECT key, value
         FROM facts
+        ORDER BY key
     """)
 
     rows=cursor.fetchall()
@@ -321,7 +369,7 @@ def get_recent_memories(limit=10):
     cursor.execute("""
         SELECT type, content, importance, created_at
         FROM memories
-        ORDER BY importance DESC, id DESC
+        ORDER BY id DESC
         LIMIT ?
     """,(limit,))
 
