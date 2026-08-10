@@ -84,8 +84,3 @@ def speak(text):
         print(f"Fehler beim Abspielen der Sprachausgabe:", {error})
 
 
-
-
-
-
-ich habe es jetzt hinbekommen mit speech, aber was mir auffällt, nova antwortet absoulut unnatürlich. Ich habe gesagt das sie spotify öffnen soll udn sie hat gesagt dass das eine einfach anfrage sei und sie mir helfen kann spotify playlisten zu erstellen, sie hat aber nicht mal spotify geöffnet und außerdem war diese antwort und rückfrage absoult unnartürlich und unnötig

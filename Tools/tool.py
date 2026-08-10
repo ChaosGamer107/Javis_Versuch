@@ -1,16 +1,21 @@
-from tool_registry import get_tool
+from tools.tool_registry import get_tool
 
 def execute_tool(name, arguments):
 
     tool=get_tool(name)
 
     if tool is None:
-        return "Dieses Tool existiert nicht."
+        return f"Das Tool '{name}' existiert nicht."
+
+    if arguments is None:
+        arguments={}
 
     try:
 
-        return tool["function"](**arguments)
+        result=tool["function"](**arguments)
 
-    except Exception as e:
+        return result
 
-        return f"Fehler: {e}"
+    except Exception as error:
+
+        return f"Fehler beim Ausführen von '{name}': {error}"

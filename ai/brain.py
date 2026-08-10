@@ -6,6 +6,7 @@ from ai.prompt_builder import build_prompt
 from memory.conversation import set_topic, set_goal, set_mode, set_user_mood, update_conversation
 from memory.memory import get_all_facts, get_recent_conversations, search_memories_semantic
 from tools.tool_registry import get_tool_discription
+from tools.tool import execute_tool
 
 def process(user_input):
 
@@ -28,6 +29,15 @@ def process(user_input):
 
     tool_text=get_tool_discription()
 
+    tool_result=None
+
+    if plan["use_tools"]:
+
+        tool_result=execute_tool(
+            plan["tool"],
+            plan["arguments"]
+        )
+
     prompt=build_prompt(
         user_input,
         analysis,
@@ -36,7 +46,8 @@ def process(user_input):
         facts,
         context,
         conversation,
-        tool_text
+        tool_text,
+        tool_result
     )
     reply=ask_llama(prompt)
 
