@@ -10,7 +10,7 @@ def get_tool(name):
 
     return TOOLS.get(name)
 
-def get_tool_discription():
+def get_tool_description():
 
     text=""
 

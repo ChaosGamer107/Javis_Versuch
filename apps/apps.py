@@ -51,6 +51,6 @@ def start_app(app):
 
 register_tool(
     "open_app",
-    start_app,
-    "Öffnet installierte Programme auf dem Computer."
+    "Öffnet installierte Programme auf dem Computer.",
+    start_app
 )

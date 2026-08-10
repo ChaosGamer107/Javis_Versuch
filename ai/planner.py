@@ -5,88 +5,47 @@ from config import MODEL, OLLAMA_URL
 def create_plan(user_input):
 
     prompt="""
-Du bist Novas interner Aktionsplaner.
+Analysiere diese Benutzeranfrage und entscheide, ob ein Tool ausgeführt werden muss.
 
-Analysiere die Nachricht des Users.
+Antworte ausschließlich mit einem einzigen gültigen JSON-Objekt.
+Keine Erklärung.
+Kein Markdown.
+Keine zusätzlichen Zeichen.
 
-Antworte AUSSCHLIESSLICH als JSON.
-KEIN Markdown.
-KEINE Erklärung.
-KEINE zusätzlichen Wörter.
-
-Exaktes Schema:
+Schema:
 
 {{
-    "goal": "string",
-    "conversation_type": "string",
-    "use_memory": false,
-    "use_tools": false,
-    "tool": "",
-    "arguments": {{}},
-    "continue_topic": true,
-    "ask_followup": false
+  "goal": "",
+  "conversation_type": "",
+  "use_memory": false,
+  "use_tools": false,
+  "tool": "",
+  "arguments": {{}},
+  "continue_topic": true,
+  "ask_followup": false
 }}
 
 Regeln:
 
-use_tools = true:
-Nur wenn tatsächlich eine Aktion auf dem Computer ausgeführt werden soll.
+- use_tools = true nur wenn eine Aktion auf dem Computer ausgeführt werden soll.
+- tool muss der exakte Toolname sein.
+- arguments enthält die Argumente des Tools.
+- ask_followup = true nur wenn eine notwendige Information fehlt.
+- Bei eindeutigem Befehl niemals nachfragen.
 
-tool:
-Der exakte Name des Tools.
+Beispiel:
 
-arguments:
-Die benötigten Argumente für das Tool.
+Benutzer: Öffne Spotify
 
-ask_followup = true:
-Nur wenn eine für die Aufgabe notwendige Information fehlt.
+Antwort:
+{{"goal":"Spotify öffnen","conversation_type":"command","use_memory":false,"use_tools":true,"tool":"open_app","arguments":{{"app_name":"Spotify"}},"continue_topic":false,"ask_followup":false}}
 
-Keine unnötigen Rückfragen.
+Benutzer: Wie geht's dir?
 
-Beispiele:
+Antwort:
+{{"goal":"Smalltalk","conversation_type":"chat","use_memory":false,"use_tools":false,"tool":"","arguments":{{}},"continue_topic":true,"ask_followup":false}}
 
-User: Öffne Spotify
-
-{{
-    "goal": "Spotify öffnen",
-    "conversation_type": "command",
-    "use_memory": false,
-    "use_tools": true,
-    "tool": "open_app",
-    "arguments": {{
-        "app_name": "Spotify"
-    }},
-    "continue_topic": false,
-    "ask_followup": false
-}}
-
-User: Wie geht's dir?
-
-{{
-    "goal": "Smalltalk führen",
-    "conversation_type": "chat",
-    "use_memory": false,
-    "use_tools": false,
-    "tool": "",
-    "arguments": {{}},
-    "continue_topic": true,
-    "ask_followup": false
-}}
-
-User: Ich arbeite gerade an Nova
-
-{{
-    "goal": "Gespräch über Nova fortführen",
-    "conversation_type": "chat",
-    "use_memory": true,
-    "use_tools": false,
-    "tool": "",
-    "arguments": {{}},
-    "continue_topic": true,
-    "ask_followup": false
-}}
-
-User:
+Benutzer:
 {user_input}
 """
 
@@ -111,21 +70,9 @@ User:
 
         raw=response.json()["response"].strip()
 
-        start=raw.find("{")
-        end=raw.find("}")+1
+        print("Planner:", raw)
 
-        if start == -1 or end <= start:
-            raise ValueError("Planner hat kein JSON zurückgegeben: {raw}")
-
-        raw=raw[start:end]
-
-        try:
-
-            plan=json.loads(raw)
-
-        except json.JSONDecodeError:
-
-            plan=ast.literal_eval(raw)
+        plan=json.loads(raw)
 
         return normalize_plan(plan)
 
@@ -175,14 +122,3 @@ def normalize_plan(plan):
 
 
 
-Nova ist bereit!
-Ich höre...
-Du: wie geht's dir
-Planner-Fehler: name 'ast' is not defined
-Nova: Hallo! Ich bin Nova, deine persönliche KI-Assistentin. Ich bin gut gelaunt und freue mich, dass wir uns sprechen. Wie kann ich dich heute unterstützen?
-Ich höre...
-Du: öffne Spotify
-Planner-Fehler: name 'ast' is not defined
-Nova: Hallo! Ich verstehe, dass du mich bitten möchtest, Spotify zu öffnen. Ich bin bereit, diese Aktion auszuführen. Ich gebe dir nun den Befehl: "öffne Spotify".
-Ich höre...
-Du: Stopp
