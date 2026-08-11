@@ -51,6 +51,12 @@ def start_app(app):
 
 register_tool(
     "open_app",
-    "Öffnet installierte Programme auf dem Computer.",
-    start_app
+    "Öffnet eine installierte Anwendung.",
+    start_app,
+    {
+        "app_name": {
+            "type": "string",
+            "description": "Der Name der Anwendung, die geöffnet werden soll."
+        }
+    }
 )

@@ -2,7 +2,7 @@ import json
 import requests
 from config import MODEL, OLLAMA_URL
 
-def create_plan(user_input):
+def create_plan(user_input, tool_text):
 
     prompt="""
 Analysiere diese Benutzeranfrage und entscheide, ob ein Tool ausgeführt werden muss.
@@ -27,23 +27,23 @@ Schema:
 
 Regeln:
 
-- use_tools = true nur wenn eine Aktion auf dem Computer ausgeführt werden soll.
-- tool muss der exakte Toolname sein.
-- arguments enthält die Argumente des Tools.
 - ask_followup = true nur wenn eine notwendige Information fehlt.
 - Bei eindeutigem Befehl niemals nachfragen.
 
-Beispiel:
+TOOL-REGELN:
 
-Benutzer: Öffne Spotify
+- Verwende nur Tools, die in der Liste "Verfügbare Tools" stehen.
+- Verwende niemals ein Tool, das nicht in dieser Liste steht.
+- Verwende kein Tool für normales Gespräch.
+- Verwende get_time für Fragen nach der aktuellen Uhrzeit.
+- Verwende open_app nur, wenn der User tatsächlich eine Anwendung öffnen möchte.
+- Bei open_app muss app_name ausschließlich der Name der Anwendung sein.
+- Entferne Verben wie "öffne", "starte" oder "launch" aus app_name.
+- Wenn der User "Öffne Spotify" sagt, muss app_name "Spotify" sein.
+- Wenn kein Tool benötigt wird, muss use_tools false sein und tool "".
 
-Antwort:
-{{"goal":"Spotify öffnen","conversation_type":"command","use_memory":false,"use_tools":true,"tool":"open_app","arguments":{{"app_name":"Spotify"}},"continue_topic":false,"ask_followup":false}}
-
-Benutzer: Wie geht's dir?
-
-Antwort:
-{{"goal":"Smalltalk","conversation_type":"chat","use_memory":false,"use_tools":false,"tool":"","arguments":{{}},"continue_topic":true,"ask_followup":false}}
+Verfügbare Tools:
+{tool_text}
 
 Benutzer:
 {user_input}

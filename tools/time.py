@@ -9,7 +9,8 @@ def get_time():
 
 
 register_tool(
-    "time",
+    "get_time",
+    "Liefert die aktuelle lokale Uhrzeit.",
     get_time,
-    "Gibt die aktuelle Uhrzeit an"
+    parameters={}
 )

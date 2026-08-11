@@ -8,7 +8,8 @@ def open_youtube():
     return "Ich öffne Youtube"
 
 register_tool(
-    "youtube",
+    "open_youtube",
+    "Öffnet Youtube im Browser",
     open_youtube,
-    "Öffnet Youtube im Browser"
+    parameters={}
 )

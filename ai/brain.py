@@ -19,15 +19,15 @@ def process(user_input):
 
     reasoning=build_reasoning(user_input)
 
-    plan=create_plan(user_input)
+    tool_text=get_tool_description()
+
+    plan=create_plan(user_input, tool_text)
 
     facts=get_all_facts()
 
     context=search_memories_semantic(user_input)
 
     conversation=get_recent_conversations()
-
-    tool_text=get_tool_description()
 
     tool_result=None
 
