@@ -1,10 +1,11 @@
 TOOLS={}
 
-def register_tool(name, description, function, parameters:None):
+def register_tool(name, description, function, parameters:None, examples):
     TOOLS[name]={
         "description":description,
         "function":function,
-        "parameters":parameters or {}
+        "parameters":parameters or {},
+        "triggers":triggers or {}
     }
 
 def get_tool(name):
