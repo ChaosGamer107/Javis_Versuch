@@ -1,42 +1,48 @@
 TOOLS={}
 
-def register_tool(name, description, function, parameters:None, examples):
+def register_tool(name, description, function, parameters:None):
     TOOLS[name]={
         "description":description,
         "function":function,
         "parameters":parameters or {},
-        "triggers":triggers or {}
     }
 
 def get_tool(name):
 
     return TOOLS.get(name)
 
-def get_tool_description():
+def get_tools():
 
-    text=""
+    tools=[]
 
     for name, tool in TOOLS.items():
 
-        text+=f"\n{name}: "
-        text+=f"\nBeschreibung: {tool['description']}"
+        properties={}
 
-        if tool["parameters"]:
+        required={}
 
-            text+=f"\n Parameter:"
+        for parameter, info in tool["parameters"].items():
 
-            for parameter, info in tool["parameters"].items():
+            properties[parameter]={
+                "type":info.get("type", "string"),
+                "description":info.get("description", "")
+            }
 
-                text+=(
-                    f"\n    -{parameter}:"
-                    f"{info.get('description', '')}"
-                )    
+            if info.get("required", True):
+                required.append(parameter)
 
-        else:
+        tools.append({
+            "type":"function",
+            "function":{
+                "name":name,
+                "description":tool["description"],
+                "parameters":{
+                    "type":"object",
+                    "properties":properties,
+                    "required":required
+                }
+            }
+        })
 
-            text+=f"\n Parameter: keine"
-
-        text+=f"\n"
-
-    return text
+    return tools
         

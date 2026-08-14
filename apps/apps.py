@@ -56,7 +56,8 @@ register_tool(
     {
         "app_name": {
             "type": "string",
-            "description": "Der Name der Anwendung, die geöffnet werden soll."
+            "description": "Name der Anwendung",
+            "required":True
         }
     }
 )
