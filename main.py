@@ -3,6 +3,9 @@ from speech.speech import listen, speak
 from memory.memory import init_db
 from ai.brain import process
 from tools.tool_registry import get_tool
+from apps.apps import load_programs
+
+load_programs()
 
 load_tools()
 

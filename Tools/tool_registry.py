@@ -1,10 +1,11 @@
+import inspect
+
 TOOLS={}
 
-def register_tool(name, description, function, parameters:None):
+def register_tool(name, description, function):
     TOOLS[name]={
         "description":description,
         "function":function,
-        "parameters":parameters or {},
     }
 
 def get_tool(name):
@@ -17,19 +18,39 @@ def get_tools():
 
     for name, tool in TOOLS.items():
 
+        function=tool["function"]
+
+        signature=inspect.signature(function)
+
         properties={}
+        required=[]
 
-        required={}
+        for parameter in signature.parameters.values():
 
-        for parameter, info in tool["parameters"].items():
+            if parameter.kind in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD
+            ):
+                continue
 
-            properties[parameter]={
-                "type":info.get("type", "string"),
-                "description":info.get("description", "")
+            parameter_type="string"
+
+            if parameter.annotation is int:
+                parameter_type="integer"
+
+            elif parameter.annotation is float:
+                parameter_type="number"
+
+            elif parameter.annotation is bool:
+                parameter_type="boolean"
+
+            properties[parameter.name]={
+                "type":parameter_type,
+                "description":f"Parameter {parameter.name}"
             }
 
-            if info.get("required", True):
-                required.append(parameter)
+            if parameter.default is inspect.Parameter.empty:
+                required.append(parameter.name)
 
         tools.append({
             "type":"function",
@@ -39,7 +60,7 @@ def get_tools():
                 "parameters":{
                     "type":"object",
                     "properties":properties,
-                    "required":required
+                    "requried":required
                 }
             }
         })
