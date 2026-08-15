@@ -60,7 +60,7 @@ def get_tools():
                 "parameters":{
                     "type":"object",
                     "properties":properties,
-                    "requried":required
+                    "required":required
                 }
             }
         })

@@ -3,30 +3,30 @@ from config import MODEL
 from tools.tool_registry import get_tools, get_tool
 from memory.memory import add_conversation
 
+SYSTEM_PROMPT="""
+        Du bist Nova, eine persönliche KI-Assistentin.
+
+        Sprich natürlich, locker und menschlich.
+        Antworte direkt und vermeide unnötige Rückfragen.
+
+        Wenn du ein verfügbares Tool benötigst, benutze es.
+        Behaupte niemals, ein Tool benutzt zu haben, wenn du es nicht tatsächlich benutzt hast.
+
+        Bei einfachen Gesprächen brauchst du kein Tool.
+    """
+
 def ask_llama(user_input):
 
     tools=get_tools()
 
     messages=[
         {
-            "role": "system",
-            "content": """
-Du bist Nova, eine persönliche KI-Assistentin.
-
-Antworte natürlich, locker und menschlich.
-Vermeide unnötige Rückfragen.
-Wenn die Anfrage eindeutig ist, erledige sie direkt.
-
-Wenn ein verfügbares Tool benötigt wird,
-verwende das Tool statt die Aktion nur zu beschreiben.
-
-Behaupte niemals, dass du ein Tool ausgeführt hast,
-wenn du es nicht tatsächlich ausgeführt hast.
-"""
+            "role":"system",
+            "content":SYSTEM_PROMPT
         },
         {
-            "role": "user",
-            "content": user_input  
+            "role":"user",
+            "content":user_input
         }
     ]
 
@@ -77,8 +77,8 @@ wenn du es nicht tatsächlich ausgeführt hast.
 
     reply=response.message.content.strip()
 
-    add_conversation("User:", user_input)
-    add_conversation("Nova:", reply)
+    add_conversation("User", user_input)
+    add_conversation("Nova", reply)
 
     return reply
             
