@@ -1,0 +1,7 @@
+ollama
+numpy
+requests
+pygame
+SpeechRecognition
+PyAudio
+piper-tts
