@@ -4,3 +4,6 @@ requests
 pygame
 SpeechRecognition
 PyAudio
+torch --index-url https://download.pytorch.org/whl/cu128
+torchvision --index-url https://download.pytorch.org/whl/cu128
+torchaudio --index-url https://download.pytorch.org/whl/cu128
