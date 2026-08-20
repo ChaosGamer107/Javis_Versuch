@@ -6,3 +6,5 @@ SpeechRecognition
 PyAudio
 chatterbox-tts
 git+https://github.com/resemble-ai/Perth.git
+soundfile
+sentence_transformers

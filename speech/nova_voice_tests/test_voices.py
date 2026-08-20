@@ -5,20 +5,10 @@ import soundfile as sf
 
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 
-
-# ============================================================
-# Pfade
-# ============================================================
-
 REFERENCE_AUDIO = r"D:\KIs\Nova\speech\nova_voice_tests\nova_reference.wav"
 OUTPUT_DIR = Path(r"D:\KIs\Nova\speech\nova_voice_tests")
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-
-# ============================================================
-# Testtexte
-# ============================================================
 
 texts = {
      "01_neutral": """
@@ -27,12 +17,6 @@ texts = {
     der normalen Parameter. Es wurden keine kritischen Probleme festgestellt.
     """
 }
-
-
-
-# ============================================================
-# Prüfen, ob Referenz existiert
-# ============================================================
 
 reference_path = Path(REFERENCE_AUDIO)
 
@@ -50,11 +34,6 @@ print("Referenz gefunden:")
 print(reference_path)
 print()
 
-
-# ============================================================
-# Chatterbox laden
-# ============================================================
-
 print("Lade Chatterbox auf die GPU...")
 
 model = ChatterboxMultilingualTTS.from_pretrained(
@@ -64,11 +43,6 @@ model = ChatterboxMultilingualTTS.from_pretrained(
 
 print("Chatterbox geladen.")
 print()
-
-
-# ============================================================
-# Tests erzeugen
-# ============================================================
 
 for name, text in texts.items():
 
@@ -85,10 +59,6 @@ for name, text in texts.items():
         min_p=0.05,
         top_p=1.0
 )
-
-    # ========================================================
-    # Stille am Anfang / Ende entfernen
-    # ========================================================
 
     threshold = 0.01
 
@@ -109,10 +79,6 @@ for name, text in texts.items():
         end = min(len(audio), end + padding)
 
         wav = audio[start:end].unsqueeze(0)
-
-    # ========================================================
-    # Speichern
-    # ========================================================
 
     output_file = OUTPUT_DIR / f"nova_{name}.wav"
 
