@@ -1,6 +1,43 @@
 import speech_recognition as sr
+import torch
+import soundfile as sf
+import pygame
+import os
+import time
+import re
+import threading
+import queue
+from pathlib import Path
+from chatterbox.mtl_tts import ChatterboxMultilingualTTS
+from chatterbox.models.t3.modules.cond_enc import T3Cond
 from config import LANGUAGE, PHRASE_TIME_LIMIT
-from speech.nova_tts import speak
+
+REFERENCE_AUDIO = r"D:\KIs\Nova\speech\nova_voice_tests\nova_reference.wav"
+
+OUTPUT_DIR = Path(r"D:\KIs\Nova\speech\nova_tts")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+print("Lade Nova TTS auf die GPU...")
+
+device="cuda" if torch.cuda.is_available() else "cpu"
+
+print(f"Verwendetes Gerät: {device}")
+
+model=ChatterboxMultilingualTTS.from_pretrained(
+    device=device,
+    t3_model="v3"
+)
+
+model.prepare_conditionals(
+    REFERENCE_AUDIO,
+    exaggeration=0.5
+)
+
+print("Nova TTS bereit.")
+
+pygame.mixer.init()
+
+voice_id=0
 
 def listen():
 
@@ -17,3 +54,306 @@ def listen():
     except sr.UnknownValueError:
         print("Ich habe dich nicht verstanden")
         return ""
+
+    except sr.RequestError as error:
+        print("Spracherkennung Fehler:", error)
+        return ""
+
+def split_text(text):
+
+    text=text.strip()
+
+    if not text:
+        return[]
+
+    text=re.sub(r"\s+", " ", text)
+
+    sentences=re.split(
+        r'(?<=[.!?])\s+',
+        text
+    )
+
+    sentences=[
+        s.strip()
+        for s in sentences
+        if s.strip()
+    ]
+
+    chunks=[]
+
+    current= ""
+
+    for sentence in sentences:
+
+        if not current:
+
+            current=sentence
+
+            continue
+
+        candidate=current+" "+sentence
+
+        if len(candidate) <= 250:
+
+            current = candidate
+
+        else:
+
+            chunks.append(current)
+            current=sentence
+
+    if current:
+
+        chunks.append(current)
+
+    return chunks
+
+def calculate_max_tokens(text):
+
+    characters=len(text)
+    words=len(text.split())
+
+    estimated=int(
+        characters*1.8
+    )
+
+    estimated=max(
+        estimated,
+        100
+    )
+
+    estimated+=40
+
+    estimated=min(
+        estimated,
+        700
+    )
+
+    print(
+        f"TTS-Limit: {estimated} Speech-Tokens"
+        f"für {words} Wörter / {characters} Zeichen"
+    )
+
+    return estimated
+    
+
+def generate_audio(text):
+
+    print()
+    print("TTS:", text)
+
+    text=text.strip()
+
+    if not text:
+        return None
+
+    from chatterbox.mtl_tts import punc_norm
+
+    text=punc_norm(text)
+
+    text_tokens=model.tokenizer.text_to_tokens(
+        text,
+        language_id="de"
+    ).to(model.device)
+
+    text_tokens=torch.cat(
+        [text_tokens, text_tokens],
+        dim=0
+    )
+
+    sot=model.t3.hp.start_text_token
+    eot=model.t3.hp.stop_text_token
+
+    text_tokens=torch.nn.functional.pad(
+        text_tokens,
+        (1, 0),
+        value=sot
+    )
+
+    text_tokens=torch.nn.functional.pad(
+        text_tokens,
+        (1, 0),
+        value=eot
+    )
+
+    max_tokens=calculate_max_tokens(text)
+
+    with torch.inference_mode():
+
+        speech_tokens=model.t3.inference(
+            t3_cond=model.conds.t3,
+            text_tokens=text_tokens,
+            max_new_tokens=max_tokens,
+            stop_on_eos=True,
+            temperature=0.5,
+            cfg_weight=0.7,
+            repetition_penalty=2.0,
+            min_p=0.05,
+            top_p=0.9
+        )
+
+    wav=model.s3gen.inference(
+        speech_tokens=speech_tokens,
+        ref_dict=model.conds.gen
+    )
+
+    if isinstance(wav, tuple):
+
+        wav=wav[0]
+
+    if torch.is_tensor(wav):
+
+        audio=(wav.squeeze().detach().cpu().numpy())
+
+    else:
+
+        audio=wav.squeeze()
+
+    audio=model.watermarker.apply_watermark(
+        audio,
+        model.sr
+    )
+
+    return audio
+
+def save_audio(audio):
+
+    global voice_id
+
+    if audio is None:
+        return None
+
+    filename=OUTPUT_DIR / f"nova_{voice_id}.wav"
+
+    voice_id+=1
+
+    sf.write(
+        str(filename),
+        audio,
+        model.sr
+    )
+
+    return filename
+
+def play_audio(filename):
+
+    if filename is None:
+        return 
+
+    pygame.mixer.music.load(str(filename))
+    pygame.mixer.music.play()
+
+    while pygame.mixer.music.get_busy():
+        time.sleep(0.02)
+
+    pygame.mixer.music.unload()
+
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+
+def speak(text):
+
+    if not text or not text.strip():
+          return
+
+    chunks=split_text(text)
+
+    if not chunks:
+        return
+
+    print(f"Nova TTS: {len(chunks)} Audioblock/Blöcke")
+
+    audio_queue=queue.Queue()
+
+    generation_finished=threading.Event()
+
+    def producer():
+
+        try:
+
+            for index,chunk in enumerate(chunks):
+
+                print()
+                print(
+                    f"[TTS {index + 1}/{len(chunks)}]"
+                )
+
+                generated_audio=generate_audio(chunk)
+
+                if generated_audio is None:
+
+                    print(
+                        f"[TTS {index + 1}]"
+                        "Keine Audiodaten erhalten."
+                    )
+
+                    continue
+
+                filename=save_audio(
+                    generated_audio
+                )
+
+                if filename is None:
+
+                    print(
+                        f"[TTS {index + 1}]"
+                        "Audio konnte nicht gespeichert werden."
+                    )
+
+                audio_queue.put(filename)
+
+                print(
+                    f"[TTS {index + 1}]"
+                    "Audio bereit."
+                )
+
+        except Exception as error:
+
+            print()
+            print("Fehler im TTS Producer.")
+            print(type(error).__name__, ":", error)
+
+            import traceback
+            traceback.print_exc()
+
+        finally:
+
+            generation_finished.set()
+
+    worker=threading.Thread(
+        target=producer,
+        daemon=True
+    )
+
+    worker.start()
+
+    while True:
+
+        try:
+
+            filename=audio_queue.get(
+                timeout=0.1
+            )
+
+        except queue.Empty:
+
+            if generation_finished.is_set():
+
+                break
+
+            continue
+
+        try:
+
+            play_audio(filename)
+
+        finally:
+
+            audio_queue.task_done()
+
+    worker.join()
+
+    print()
+    print("Nova TTS fertig.")

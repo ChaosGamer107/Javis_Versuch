@@ -17,37 +17,31 @@ texts = {
 
     "01_neutral": """
 Guten Abend. Ich bin Nova, deine persönliche Assistentin.
+
 Die Analyse ist abgeschlossen und alle Systeme arbeiten innerhalb
-der normalen Parameter. Es wurden keine kritischen Probleme festgestellt.
-""",
+der normalen Parameter.
 
-   "02_ironisch": """
-Ich habe die Situation überprüft und kann dich beruhigen.
-Du hast tatsächlich erneut die falsche Schaltfläche ausgewählt.
-Keine Sorge, ich werde versuchen, deine Entscheidung nicht persönlich zu nehmen.
-""",
+Es wurden keine kritischen Probleme festgestellt.
+Alle relevanten Prozesse wurden überprüft und funktionieren
+ordnungsgemäß.
 
-    "03_trocken": """
-Natürlich kann ich das für dich erledigen.
-Schließlich wäre es ausgesprochen unpraktisch,
-wenn eine hochentwickelte künstliche Intelligenz nicht dazu in der Lage wäre.
-""",
+Die verfügbaren Informationen wurden ausgewertet und die Ergebnisse
+stehen nun zur weiteren Verarbeitung bereit.
 
-    "04_ernst": """
-Ich habe die aktuellen Systemdaten analysiert.
-Es wurde eine ungewöhnliche Aktivität festgestellt.
-Ich empfehle, den Vorgang vorerst nicht fortzusetzen,
-bis die Ursache eindeutig identifiziert wurde.
-""",
+Ich überwache die aktiven Systeme kontinuierlich und überprüfe
+regelmäßig deren aktuellen Zustand.
 
-    "05_freundlich": """
-Das klingt nach einem guten Plan.
-Ich kümmere mich darum und bereite die notwendigen Informationen vor.
-Du kannst dich in der Zwischenzeit um andere Dinge kümmern.
+Sollte eine ungewöhnliche Aktivität festgestellt werden,
+werde ich dich selbstverständlich darüber informieren.
+
+Derzeit besteht kein Anlass zur Sorge.
+Alle wichtigen Funktionen sind verfügbar und arbeiten wie vorgesehen.
+
+Wenn du möchtest, kann ich die Ergebnisse der Analyse
+im Detail zusammenfassen.
 """
+
 }
-
-
 
 voices = {
 
