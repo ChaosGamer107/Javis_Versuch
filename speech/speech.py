@@ -9,7 +9,6 @@ import threading
 import queue
 from pathlib import Path
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS
-from chatterbox.models.t3.modules.cond_enc import T3Cond
 from config import LANGUAGE, PHRASE_TIME_LIMIT
 
 REFERENCE_AUDIO = r"D:\KIs\Nova\speech\nova_voice_tests\nova_reference.wav"
@@ -68,8 +67,9 @@ def split_text(text):
 
     text=re.sub(r"\s+", " ", text)
 
-    sentences=re.split(
-        r'(?<=[.!?])\s+',
+    sentences=re.sub(
+        r"\s+",
+        " ",
         text
     )
 
@@ -91,7 +91,7 @@ def split_text(text):
 
             continue
 
-        candidate=current+" "+sentence
+        candidate=current +" "+ sentence
 
         if len(candidate) <= 250:
 
@@ -114,19 +114,19 @@ def calculate_max_tokens(text):
     words=len(text.split())
 
     estimated=int(
-        characters*1.8
+        characters*1.35
     )
 
     estimated=max(
         estimated,
-        100
+        80
     )
 
-    estimated+=40
+    estimated+=25
 
     estimated=min(
         estimated,
-        700
+        450
     )
 
     print(
@@ -140,7 +140,7 @@ def calculate_max_tokens(text):
 def generate_audio(text):
 
     print()
-    print("TTS:", text)
+    print("TTS ORIGINAL:", repr(text))
 
     text=text.strip()
 
@@ -151,15 +151,14 @@ def generate_audio(text):
 
     text=punc_norm(text)
 
+    text = re.sub(r'(?<=\w) (?=\w)', '', text)
+
+    print("TEXT VOR TOKENIZER:", repr(text))
+
     text_tokens=model.tokenizer.text_to_tokens(
         text,
         language_id="de"
     ).to(model.device)
-
-    text_tokens=torch.cat(
-        [text_tokens, text_tokens],
-        dim=0
-    )
 
     sot=model.t3.hp.start_text_token
     eot=model.t3.hp.stop_text_token
@@ -172,8 +171,13 @@ def generate_audio(text):
 
     text_tokens=torch.nn.functional.pad(
         text_tokens,
-        (1, 0),
+        (0, 1),
         value=eot
+    )
+
+    text_tokens=torch.cat(
+        [text_tokens, text_tokens],
+        dim=0
     )
 
     max_tokens=calculate_max_tokens(text)
@@ -185,17 +189,19 @@ def generate_audio(text):
             text_tokens=text_tokens,
             max_new_tokens=max_tokens,
             stop_on_eos=True,
-            temperature=0.5,
-            cfg_weight=0.7,
-            repetition_penalty=2.0,
-            min_p=0.05,
+            temperature=0.7,
+            cfg_weight=0.55,
+            repetition_penalty=1.3,
+            min_p=0.08,
             top_p=0.9
         )
 
-    wav=model.s3gen.inference(
-        speech_tokens=speech_tokens,
-        ref_dict=model.conds.gen
-    )
+    with torch.inference_mode():
+
+        wav=model.s3gen.inference(
+            speech_tokens=speech_tokens,
+            ref_dict=model.conds.gen
+        )
 
     if isinstance(wav, tuple):
 
@@ -269,6 +275,8 @@ def speak(text):
 
     generation_finished=threading.Event()
 
+    generation_failed=threading.Event()
+
     def producer():
 
         try:
@@ -302,6 +310,8 @@ def speak(text):
                         "Audio konnte nicht gespeichert werden."
                     )
 
+                    continue
+
                 audio_queue.put(filename)
 
                 print(
@@ -310,6 +320,8 @@ def speak(text):
                 )
 
         except Exception as error:
+
+            generation_failed.set()
 
             print()
             print("Fehler im TTS Producer.")
@@ -355,5 +367,12 @@ def speak(text):
 
     worker.join()
 
-    print()
-    print("Nova TTS fertig.")
+    if generation_failed.is_set():
+
+        print()
+        print("Nova TTS wurde wegen eines Generierungsfehler abgebrochen.")
+
+    else:
+
+        print()
+        print("Nova TTS fertig.")
