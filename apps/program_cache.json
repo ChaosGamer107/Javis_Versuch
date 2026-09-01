@@ -1,5 +1,5 @@
 {
-    "timestamp": 1788077284.8552427,
+    "timestamp": 1788191131.71,
     "programs": {
         "ace-service64": "C:\\Program Files\\AntiCheatExpert\\ACE-Service64.exe",
         "sguard64": "C:\\Program Files\\AntiCheatExpert\\SGuard\\x64\\SGuard64.exe",
@@ -403,6 +403,9 @@
         "googleplaygamesservices": "C:\\Program Files\\Google\\Play Games Services\\26.8.308.0\\Service\\GooglePlayGamesServices.exe",
         "googleplaygamesservicesoverlay": "C:\\Program Files\\Google\\Play Games Services\\26.8.308.0\\Service\\GooglePlayGamesServicesOverlay.exe",
         "googleplaygamesservicesuninstaller": "C:\\Program Files\\Google\\Play Games Services\\26.8.308.0\\Uninstaller\\GooglePlayGamesServicesUninstaller.exe",
+        "hpappprintscandoctorservice": "C:\\Program Files\\HPAppPrintScanDoctor\\HPAppPrintScanDoctorService.exe",
+        "hpprinterhealthmonitor": "C:\\Program Files\\HPAppPrintScanDoctor\\HPPrinterHealthMonitor.exe",
+        "hpsupd-win32exe": "C:\\Program Files\\HPAppPrintScanDoctor\\HPSUPD-Win32Exe.exe",
         "extexport": "C:\\Program Files\\Internet Explorer\\ExtExport.exe",
         "iediagcmd": "C:\\Program Files\\Internet Explorer\\iediagcmd.exe",
         "ieinstal": "C:\\Program Files\\Internet Explorer\\ieinstal.exe",
@@ -666,7 +669,7 @@
         "epiconlineservicesinstallhelper": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\EpicOnlineServicesInstallHelper.exe",
         "epiconlineservicesuihelper": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\EpicOnlineServicesUIHelper.exe",
         "epiconlineservicesuserhelper": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\EpicOnlineServicesUserHelper.exe",
-        "epiconlineserviceshost": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\.egstore\\bps\\Install\\service\\EpicOnlineServicesHost.exe",
+        "epiconlineserviceshost": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\.egstore\\old.ver\\service\\EpicOnlineServicesHost.exe",
         "eosoverlayrenderer-win32-shipping": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayRenderer-Win32-Shipping.exe",
         "eosoverlayrenderer-win64-shipping": "C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayRenderer-Win64-Shipping.exe",
         "epicgameslauncher": "C:\\Program Files (x86)\\Epic Games\\Launcher\\Engine\\Binaries\\Win64\\EpicGamesLauncher.exe",
@@ -845,6 +848,7 @@
         "chatgpt-classic": "C:\\Users\\engle\\AppData\\Local\\Microsoft\\WindowsApps\\chatgpt-classic.exe",
         "gamebarelevatedft_alias": "C:\\Users\\engle\\AppData\\Local\\Microsoft\\WindowsApps\\GameBarElevatedFT_Alias.exe",
         "gethelp": "C:\\Users\\engle\\AppData\\Local\\Microsoft\\WindowsApps\\GetHelp.exe",
+        "hp": "C:\\Users\\engle\\AppData\\Local\\Microsoft\\WindowsApps\\hp.exe",
         "mediaplayer": "C:\\Users\\engle\\AppData\\Local\\Microsoft\\WindowsApps\\MediaPlayer.exe",
         "microsoftstore": "C:\\Users\\engle\\AppData\\Local\\Microsoft\\WindowsApps\\microsoftstore.exe",
         "microsoftwindows.desktopstickereditorcentennial": "C:\\Users\\engle\\AppData\\Local\\Microsoft\\WindowsApps\\MicrosoftWindows.DesktopStickerEditorCentennial.exe",

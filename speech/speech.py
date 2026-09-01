@@ -65,11 +65,10 @@ def split_text(text):
     if not text:
         return[]
 
-    text=re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s+", " ", text)
 
-    sentences=re.sub(
-        r"\s+",
-        " ",
+    sentences=re.split(
+        r"(?<=[.!?])\s+",
         text
     )
 
@@ -85,25 +84,44 @@ def split_text(text):
 
     for sentence in sentences:
 
-        if not current:
+        if len(sentence) > 250:
+            words=sentence.split()
+            current=""
 
-            current=sentence
+            for word in words:
+                candidate=(
+                    word
+                    if not current
+                    else current + " " + word
+                )
 
+                if len(candidate)<=250:
+                    current=candidate
+                else:
+                    if current:
+                        chunks.append(current)
+
+                    current=word
+
+            if current:
+                chunks.append(current)
+
+            current=""
             continue
 
-        candidate=current +" "+ sentence
+        if not current:
+            current=sentence
+            continue
 
-        if len(candidate) <= 250:
+        candidate=current + " " + sentence
 
-            current = candidate
-
+        if len(candidate)<=250:
+            current=candidate
         else:
-
             chunks.append(current)
             current=sentence
 
     if current:
-
         chunks.append(current)
 
     return chunks
@@ -135,12 +153,11 @@ def calculate_max_tokens(text):
     )
 
     return estimated
-    
 
 def generate_audio(text):
 
-    print()
-    print("TTS ORIGINAL:", repr(text))
+    print("DEBUG generate_audio:", repr(text))
+    text=text.strip()
 
     text=text.strip()
 
@@ -149,11 +166,13 @@ def generate_audio(text):
 
     from chatterbox.mtl_tts import punc_norm
 
+    original_text=text
+
     text=punc_norm(text)
+    text = re.sub(r"\s+", " ", text).strip()
 
-    text = re.sub(r'(?<=\w) (?=\w)', '', text)
-
-    print("TEXT VOR TOKENIZER:", repr(text))
+    print(f"TTS ORIGINAL: '{original_text}'")
+    print(f"TEXT VOR TOKENIZER: '{text}'")
 
     text_tokens=model.tokenizer.text_to_tokens(
         text,
@@ -194,6 +213,29 @@ def generate_audio(text):
             repetition_penalty=1.3,
             min_p=0.08,
             top_p=0.9
+        )
+
+    max_speech_token=6561
+
+    invalid_tokens=(
+        (speech_tokens < 0)|
+        (speech_tokens > max_speech_token)
+    )
+
+    if invalid_tokens.any():
+        print(
+            f"Warnung: {invalid_tokens.sum().item()}"
+            f"ungültige Speech-Tokens gefunden."
+        )
+
+        print(
+            f"Maximaler erzeugter Token:"
+            f"{speech_tokens.max().item()}"
+        )
+
+        speech_tokens=speech_tokens.clamp(
+            min=0,
+            max=max_speech_token
         )
 
     with torch.inference_mode():
