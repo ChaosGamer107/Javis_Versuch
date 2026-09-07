@@ -215,28 +215,18 @@ def generate_audio(text):
             top_p=0.9
         )
 
-    max_speech_token=6561
+    speech_tokens=speech_tokens[0]
 
-    invalid_tokens=(
-        (speech_tokens < 0)|
-        (speech_tokens > max_speech_token)
+    speech_tokens=speech_tokens[speech_tokens < 6561]
+
+    if speech_tokens.numel() == 0:
+        print("Keine gültigen Speech-Tokens erzeugt.")
+        return None
+
+    print(
+        f"Speech-Tokens: {speech_tokens.numel()}"
+        f"Max: {speech_tokens.max().item()}"
     )
-
-    if invalid_tokens.any():
-        print(
-            f"Warnung: {invalid_tokens.sum().item()}"
-            f"ungültige Speech-Tokens gefunden."
-        )
-
-        print(
-            f"Maximaler erzeugter Token:"
-            f"{speech_tokens.max().item()}"
-        )
-
-        speech_tokens=speech_tokens.clamp(
-            min=0,
-            max=max_speech_token
-        )
 
     with torch.inference_mode():
 
