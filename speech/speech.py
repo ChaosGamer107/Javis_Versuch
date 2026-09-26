@@ -51,8 +51,8 @@ def listen():
         print("Du:", text)
         return text
     except sr.UnknownValueError:
-        print("Ich habe dich nicht verstanden")
-        return ""
+        print("")
+    
 
     except sr.RequestError as error:
         print("Spracherkennung Fehler:", error)
@@ -157,6 +157,9 @@ def calculate_max_tokens(text):
 def generate_audio(text):
 
     print("DEBUG generate_audio:", repr(text))
+
+    t_start=time.time()
+
     text=text.strip()
 
     text=text.strip()
@@ -201,6 +204,10 @@ def generate_audio(text):
 
     max_tokens=calculate_max_tokens(text)
 
+    if device == "cuda":
+        torch.cuda.synchronize()
+    t_tokenize=time.time()
+
     with torch.inference_mode():
 
         speech_tokens=model.t3.inference(
@@ -215,6 +222,10 @@ def generate_audio(text):
             top_p=0.9
         )
 
+    if device == "cuda":
+        torch.cuda.synchronize()
+    t_t3=time.time()
+
     speech_tokens=speech_tokens[0]
 
     speech_tokens=speech_tokens[speech_tokens < 6561]
@@ -225,7 +236,7 @@ def generate_audio(text):
 
     print(
         f"Speech-Tokens: {speech_tokens.numel()}"
-        f"Max: {speech_tokens.max().item()}"
+        f"Max: {speech_tokens.max().item()} / Limit: {max_tokens}"
     )
 
     with torch.inference_mode():
@@ -234,6 +245,10 @@ def generate_audio(text):
             speech_tokens=speech_tokens,
             ref_dict=model.conds.gen
         )
+
+    if device == "cuda":
+        torch.cuda.synchronize()
+    t_s3gen=time.time()
 
     if isinstance(wav, tuple):
 
@@ -251,6 +266,18 @@ def generate_audio(text):
         audio,
         model.sr
     )
+
+    t_watermark = time.time()
+
+    print(
+        f"[TIMING] Tokenize: {t_tokenize - t_start: .2f}s |"
+        f"T3: {t_t3 - t_tokenize: .2f}s |"
+        f"S3Gen: {t_s3gen - t_t3: .2f}s |"
+        f"Watermark: {t_watermark - t_s3gen: .2f}s |"
+        f"Gesamt: {t_watermark - t_start: .2f}s |"
+    )
+
+    print(next(model.t3.parameters()).dtype)
 
     return audio
 

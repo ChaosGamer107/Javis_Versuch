@@ -1,3 +1,4 @@
+import time
 import ollama
 from config import MODEL
 from tools.tool_registry import get_tools, get_tool
@@ -40,12 +41,18 @@ def ask_llama(user_input):
         }
     ]
 
+    t_start=time.time()
+
     response=ollama.chat(
         model=MODEL,
         messages=messages,
         tools=tools,
-        think=False
+        think=False,
+        keep_alive=-1
     )
+
+    t_first_call=time.time()
+    print(f"[LLM TIMING] 1. Aufruf: {t_first_call - t_start: .2f}s")
 
     messages.append(response.message)
 
@@ -78,14 +85,23 @@ def ask_llama(user_input):
                 "content":str(result)
             })
 
+        t_tool_time=time.time()
+        print(f"[LLM TIMING] Tool-Auführung: {t_tool_time - t_first_call: .2f}s")
+
         response=ollama.chat(
             model=MODEL,
             messages=messages,
             tools=tools,
-            think=False
+            think=False,
+            keep_alive=-1
         )
 
+        t_second_call=time.time()
+        print(f"[LLM TIMING] 2. Aufruf: {t_second_call - t_tool_time: .2f}s")
+
     reply=response.message.content.strip()
+
+    print(f"[LLM TIMING] Gesamt: {time.time() - t_start: .2f}s")
 
     add_conversation("User", user_input)
     add_conversation("Nova", reply)
