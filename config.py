@@ -8,6 +8,6 @@ DB_NAME="database/nova.db"
 
 LANGUAGE="de-DE"
 
-PHRASE_TIME_LIMIT=5
+PHRASE_TIME_LIMIT=15
 
 DEBUG=True

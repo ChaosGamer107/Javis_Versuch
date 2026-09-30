@@ -41,8 +41,10 @@ voice_id=0
 def listen():
 
     recognizer=sr.Recognizer()
+    recognizer.pause_threshold = 1.2
 
     with sr.Microphone() as source:
+        recognizer.adjust_for_ambient_noise(source, duration=0.5)
         print("Ich höre...")
         audio=recognizer.listen(source, phrase_time_limit=PHRASE_TIME_LIMIT)
 
