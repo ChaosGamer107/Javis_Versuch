@@ -1,4 +1,3 @@
-import time
 import ollama
 from config import MODEL
 from Tools.tool_registry import get_tools, get_tool
@@ -33,6 +32,10 @@ SYSTEM_PROMPT="""
         Wenn ein Tool erfolgreich ausgeführt wurde, bestätige das kurz, im gleichen sarkastisch-loyalen Ton.
     """
 
+MAX_HISTORY_MESSAGES=10
+
+conversation_history=[]
+
 def ask_llama(user_input):
 
     tools=get_tools()
@@ -42,13 +45,12 @@ def ask_llama(user_input):
             "role":"system",
             "content":SYSTEM_PROMPT
         },
+    ] + conversation_history + [
         {
             "role":"user",
             "content":user_input
         }
     ]
-
-    t_start=time.time()
 
     response=ollama.chat(
         model=MODEL,
@@ -57,9 +59,6 @@ def ask_llama(user_input):
         think=False,
         keep_alive=-1
     )
-
-    t_first_call=time.time()
-    print(f"[LLM TIMING] 1. Aufruf: {t_first_call - t_start: .2f}s")
 
     messages.append(response.message)
 
@@ -92,9 +91,6 @@ def ask_llama(user_input):
                 "content":str(result)
             })
 
-        t_tool_time=time.time()
-        print(f"[LLM TIMING] Tool-Auführung: {t_tool_time - t_first_call: .2f}s")
-
         response=ollama.chat(
             model=MODEL,
             messages=messages,
@@ -103,12 +99,19 @@ def ask_llama(user_input):
             keep_alive=-1
         )
 
-        t_second_call=time.time()
-        print(f"[LLM TIMING] 2. Aufruf: {t_second_call - t_tool_time: .2f}s")
-
     reply=response.message.content.strip()
 
-    print(f"[LLM TIMING] Gesamt: {time.time() - t_start: .2f}s")
+    conversation_history.append({
+        "role":"user",
+        "content":user_input
+    })
+
+    conversation_history.append({
+        "role":"assistant",
+        "content":reply
+    })
+
+    del conversation_history[:-MAX_HISTORY_MESSAGES]
 
     add_conversation("User", user_input)
     add_conversation("Nova", reply)

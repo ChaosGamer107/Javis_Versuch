@@ -12,6 +12,40 @@ def get_tool(name):
 
     return TOOLS.get(name)
 
+def _parse_param_docs(function):
+
+    doc=inspect.getdoc(function)
+
+    if not doc:
+        return {}
+
+    param_docs={}
+    in_args=False
+
+    for line in doc.splitlines():
+
+        stripped=line.strip()
+
+        if stripped.lower() in ("args:", "arguments:", "parameters:"):
+            in_args=True
+            continue
+
+        if not in_args:
+            continue
+
+        if not stripped:
+            break
+
+        if ":" not in stripped:
+            continue
+
+        name_part, _, description=stripped.partition(":")
+        name_part=name_part.split("(")[0].strip()
+
+        param_docs[name_part]=description.strip()
+
+    return param_docs
+
 def get_tools():
 
     tools=[]
@@ -21,6 +55,7 @@ def get_tools():
         function=tool["function"]
 
         signature=inspect.signature(function)
+        param_docs=_parse_param_docs(function)
 
         properties={}
         required=[]
@@ -46,7 +81,10 @@ def get_tools():
 
             properties[parameter.name]={
                 "type":parameter_type,
-                "description":f"Parameter {parameter.name}"
+                "description":param_docs.get(
+                    parameter.name,
+                    f"Parameter {parameter.name}"
+                )
             }
 
             if parameter.default is inspect.Parameter.empty:

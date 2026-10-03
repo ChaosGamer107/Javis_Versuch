@@ -1,7 +1,7 @@
 import os
 import json
 import time
-from tools.tool_registry import register_tool
+from Tools.tool_registry import register_tool
 
 programs={}
 
@@ -154,7 +154,11 @@ def open_app(app_name):
     return "Programm nicht gefunden"
 
 def start_app(app_name):
-
+    """Öffnet eine instalierte Anwendung auf dem PC.
+    
+    Args:
+        app_name: Name der Anwendung, z.B. "spotify", "chrome", "discord". Groß-/Kleinschreibung ist egal, auch Teilname wie "disc" für "discord" werden versucht.
+        """
     return open_app(app_name)
 
 register_tool(
