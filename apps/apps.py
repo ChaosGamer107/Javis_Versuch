@@ -1,7 +1,7 @@
 import os
 import json
 import time
-from Tools.tool_registry import register_tool
+from tools.tool_registry import register_tool
 
 programs={}
 

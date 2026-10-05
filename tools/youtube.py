@@ -1,5 +1,5 @@
 import webbrowser
-from Tools.tool_registry import register_tool
+from tools.tool_registry import register_tool
 
 def open_youtube():
     

@@ -84,7 +84,7 @@ def search_semantic_memory(keyword):
         AND content LIKE ?
         ORDER BY id DESC
         LIMIT 10            
-    """,("Semantic",f"%{keyword}%"))
+    """,("semantic",f"%{keyword}%"))
 
     rows=cursor.fetchall()
 
@@ -304,88 +304,6 @@ def clear_conversations():
 
     cursor.execute("""
         DELETE FROM conversations
-    """)
-
-    conn.commit()
-    conn.close()
-
-#----------------------------------
-#Legacy Memory
-#----------------------------------
-
-def add_memory(memory_type, content):
-
-    embedding=create_embedding(content)
-
-    conn = sqlite3.connect(DB_NAME)
-
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO memories(type, content, embedding)
-        VALUES(?, ?, ?)
-        """,(memory_type, content, json.dumps(embedding)))
-
-    conn.commit()
-    conn.close()
-
-def get_memories():
-
-    conn = sqlite3.connect(DB_NAME)
-
-    cursor = conn.cursor()
-
-    cursor.execute( """
-    SELECT type, content
-    FROM memories
-    ORDER BY id DESC
-    """)
-
-    memories = cursor.fetchall()
-
-    conn.close()
-
-    return memories
-
-def delete_memory(memory_id):
-    
-    conn = sqlite3.connect(DB_NAME)
-
-    cursor = conn.cursor
-
-    cursor.execute("""
-        DELETE FROM memories 
-        WHERE id=?",
-    """,(memory_id,))
-
-    conn.commit()
-    conn.close()
-
-def get_recent_memories(limit=10):
-
-    conn=sqlite3.connect(DB_NAME)
-    cursor=conn.cursor()
-
-    cursor.execute("""
-        SELECT type, content, importance, created_at
-        FROM memories
-        ORDER BY id DESC
-        LIMIT ?
-    """,(limit,))
-
-    rows=cursor.fetchall()
-
-    conn.close()
-
-    return rows
-
-def clear_memories():
-
-    conn=sqlite3.connect(DB_NAME)
-    cursor=conn.cursor()
-
-    cursor.execute("""
-        DELETE FROM memories
     """)
 
     conn.commit()

@@ -1,7 +1,7 @@
 import ollama
 from config import MODEL
-from Tools.tool_registry import get_tools, get_tool
-from memory.memory import add_conversation
+from tools.tool_registry import get_tools, get_tool
+from memory.memory import add_conversation, get_recent_conversations, get_all_facts
 
 SYSTEM_PROMPT="""
         Du bist Nova, eine persönliche KI-Assistentin.
@@ -32,20 +32,35 @@ SYSTEM_PROMPT="""
         Wenn ein Tool erfolgreich ausgeführt wurde, bestätige das kurz, im gleichen sarkastisch-loyalen Ton.
     """
 
-MAX_HISTORY_MESSAGES=10
-
-conversation_history=[]
 
 def ask_llama(user_input):
 
     tools=get_tools()
 
+    facts=get_all_facts()
+
+    if facts:
+        facts_text="\n".join(f"- {key}: {value}" for key, value in facts)
+        system_content=SYSTEM_PROMPT + f"\n\nDas weißt du bereits über den Nutzer:\n{facts_text}"
+    else:
+        system_content=SYSTEM_PROMPT
+
+    history=get_recent_conversations(limit=10)
+
+    history_messages=[
+        {
+            "role":"user" if speaker == "User" else "assistant",
+            "content":message
+        }
+        for speaker, message in history
+    ]
+
     messages=[
         {
             "role":"system",
-            "content":SYSTEM_PROMPT
+            "content":system_content
         },
-    ] + conversation_history + [
+    ] + history_messages + [
         {
             "role":"user",
             "content":user_input
@@ -100,18 +115,6 @@ def ask_llama(user_input):
         )
 
     reply=response.message.content.strip()
-
-    conversation_history.append({
-        "role":"user",
-        "content":user_input
-    })
-
-    conversation_history.append({
-        "role":"assistant",
-        "content":reply
-    })
-
-    del conversation_history[:-MAX_HISTORY_MESSAGES]
 
     add_conversation("User", user_input)
     add_conversation("Nova", reply)

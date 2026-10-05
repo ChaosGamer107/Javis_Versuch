@@ -1,4 +1,4 @@
-from Tools.tool_registry import get_tool
+from tools.tool_registry import get_tool
 
 def execute_tool(name, arguments):
 
