@@ -6,7 +6,7 @@ VOICE_ID="BnNQr9Ga1RxUGlZEeAoa"
 
 DB_NAME="database/nova.db"
 
-LANGUAGE="german"
+LANGUAGE="de"
 
 PHRASE_TIME_LIMIT=15
 

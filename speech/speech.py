@@ -38,10 +38,10 @@ pygame.mixer.init()
 
 voice_id=0
 
-def listen():
+recognizer=sr.Recognizer()
+recognizer.pause_threshold = 1.2
 
-    recognizer=sr.Recognizer()
-    recognizer.pause_threshold = 1.2
+def listen():
 
     with sr.Microphone() as source:
         recognizer.adjust_for_ambient_noise(source, duration=0.5)
@@ -49,7 +49,13 @@ def listen():
         audio=recognizer.listen(source, phrase_time_limit=PHRASE_TIME_LIMIT)
 
     try:
-        text=recognizer.recognize_whisper(audio, model="small", language=LANGUAGE)
+        text=recognizer.recognize_faster_whisper(
+            audio, 
+            model="medium",
+            device="cuda", 
+            compute_type="float16",
+            language=LANGUAGE
+        )
         print("Du:", text)
         return text
     except sr.UnknownValueError:
