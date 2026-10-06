@@ -49,7 +49,7 @@ def listen():
         audio=recognizer.listen(source, phrase_time_limit=PHRASE_TIME_LIMIT)
 
     try:
-        text=recognizer.recognize_google(audio, language=LANGUAGE)
+        text=recognizer.recognize_whisper(audio, model="small", language=LANGUAGE)
         print("Du:", text)
         return text
     except sr.UnknownValueError:
