@@ -193,7 +193,7 @@ def save_fact(key,value):
 
     cursor.execute("""
         INSERT INTO facts(key, value)
-        VALUES(?, ?, CURRENT_TIMESTAMP)
+        VALUES(?, ?)
         ON CONFLICT(key)
         DO UPDATE SET
             value = excluded.value,

@@ -49,15 +49,21 @@ def listen():
         audio=recognizer.listen(source, phrase_time_limit=PHRASE_TIME_LIMIT)
 
     try:
+
+        t0=time.time()
+
         text=recognizer.recognize_faster_whisper(
             audio, 
             model="medium",
-            device="cuda", 
-            compute_type="float16",
+            init_options={"device":"cuda", "compute_type":"float16"},
             language=LANGUAGE
         )
+
+        print(time.time()-t0)
+        
         print("Du:", text)
         return text
+
     except sr.UnknownValueError:
         print("")
     
