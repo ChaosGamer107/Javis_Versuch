@@ -1,3 +1,5 @@
+import threading
+import gui
 from tools.loader import load_tools
 from speech.speech import listen, speak
 from memory.memory import init_db
@@ -13,20 +15,24 @@ init_db()
 
 print("Nova ist bereit!")
 
-while True:
+def nova_loop():
 
-    user_input=listen()
+    while True:
 
-    if not user_input:
-        continue
+        user_input=listen()
 
-    if user_input.lower() in ["beenden", "stopp", "exit"]:
-        break
+        if not user_input:
+            continue
 
-    reply=process(user_input)
+        if user_input.lower() in ["beenden", "stopp", "exit"]:
+            break
 
-    print("Nova:", reply)
+        reply=process(user_input)
 
-    speak(reply)
+        print("Nova:", reply)
 
+        speak(reply)
 
+threading.Thread(target=nova_loop, daemon=True).start()
+print("Öffne Fenster...")
+gui.run()

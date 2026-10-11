@@ -1,3 +1,5 @@
+import numpy as np
+import gui
 import speech_recognition as sr
 import torch
 import soundfile as sf
@@ -41,12 +43,66 @@ voice_id=0
 recognizer=sr.Recognizer()
 recognizer.pause_threshold = 1.2
 
+_calibrated=False
+
+def _make_spectrum(filename, band_count, window_size=2048):
+
+    data, sample_rate=sf.read(str(filename))
+
+    if data.ndim > 1:
+        data=data.mean(axis=1)
+
+    if len(data) < window_size:
+        data=np.pad(data, (0, window_size-len(data)))
+
+    hop=sample_rate//60
+
+    windows=np.lib.stride_tricks.sliding_window_view(data, window_size)[::hop]
+    windows=windows*np.hanning(window_size)
+
+    magnitude=np.abs(np.fft.rfft(windows, axis=1))
+
+    freqs=np.fft.rfftfreq(window_size, 1/sample_rate)
+    edges=np.geomspace(100, 7000, band_count+1)
+
+    bands=np.zeros((len(magnitude), band_count))
+
+    for b in range(band_count):
+
+        mask=(freqs >= edges[b]) & (freqs < edges[b+1])
+
+        if not mask.any():
+
+            mask=np.zeros(len(freqs), dtype=bool)
+            mask[np.argmin(np.abs(freqs-(edges[b]+edges[b+1])/2))]=True
+
+        bands[:, b]=magnitude[:, mask].mean(axis=1)
+
+    scale=np.maximum(np.percentile(bands, 95, axis=0), bands.max()*0.05)+1e-9
+    bands=np.clip(bands/scale, 0, 1)*0.8
+
+    return bands, hop/sample_rate
+
 def listen():
 
+    global _calibrated
+
     with sr.Microphone() as source:
-        recognizer.adjust_for_ambient_noise(source, duration=0.5)
-        print("Ich höre...")
-        audio=recognizer.listen(source, phrase_time_limit=PHRASE_TIME_LIMIT)
+
+        if not _calibrated:
+            recognizer.adjust_for_ambient_noise(source, duration=1)
+            _calibrated=True
+            print(f"Mikrofon kalibriert, Schwellwert: {recognizer.energy_threshold:.0f}")
+
+        print("Ich höre...")   
+        
+        try:
+            gui.set_mode("listening")
+
+            audio=recognizer.listen(source, timeout=10, phrase_time_limit=PHRASE_TIME_LIMIT)
+
+        except sr.WaitTimeoutError:
+            return ""
 
     try:
 
@@ -56,12 +112,15 @@ def listen():
             audio, 
             model="medium",
             init_options={"device":"cuda", "compute_type":"float16"},
-            language=LANGUAGE
-        )
+            language=LANGUAGE,
+            initial_prompt="Nova, öffne Spotify. Merk dir, das ich Volleyball mag. Wie spät ist es ?"
+        ).strip()
 
         print(time.time()-t0)
         
         print("Du:", text)
+        gui.set_text(text)
+        gui.set_mode("thinking")
         return text
 
     except sr.UnknownValueError:
@@ -319,11 +378,23 @@ def play_audio(filename):
     if filename is None:
         return 
 
+    bands, step=_make_spectrum(filename, gui.NUM_BANDS)
+
     pygame.mixer.music.load(str(filename))
     pygame.mixer.music.play()
 
+    gui.set_mode("speaking")
+
     while pygame.mixer.music.get_busy():
+
+        index=int(pygame.mixer.music.get_pos()/1000/step)
+
+        if 0 <= index < len(bands):
+            gui.set_bands(bands[index])
+
         time.sleep(0.02)
+
+    gui.set_bands(None)
 
     pygame.mixer.music.unload()
 
@@ -449,3 +520,4 @@ def speak(text):
 
         print()
         print("Nova TTS fertig.")
+
