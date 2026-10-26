@@ -1,7 +1,7 @@
 import threading
 import gui
 from tools.loader import load_tools
-from speech.speech import listen, speak
+from speech.speech import speak, listen
 from memory.memory import init_db
 from ai.brain import process
 from tools.tool_registry import get_tool
