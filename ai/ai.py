@@ -1,6 +1,7 @@
 import ollama
 from config import MODEL
 from tools.tool_registry import get_tools, get_tool
+from datetime import datetime
 from memory.memory import add_conversation, get_recent_conversations, get_all_facts
 
 SYSTEM_PROMPT="""
@@ -33,6 +34,22 @@ SYSTEM_PROMPT="""
         Wenn ein Tool erfolgreich ausgeführt wurde, bestätige kurz, was konkret passiert ist.
     """
 
+WEEKDAYS=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
+MONTHS=["Januar","Februar","März","April","Mai","Juni","July","August","September","Oktober","November","Dezember"]
+
+MAX_HISTORY_TURNS=6
+
+history_turns=[]
+
+def current_time_text():
+    
+    now=datetime.now()
+
+    return(
+        f"{WEEKDAYS[now.weekday()]}, {now.day}. {MONTHS[now.month-1]} {now.year}"
+        f"{now.strftime('%H:%M')} Uhr"
+    )
+
 
 def ask_llama(user_input):
 
@@ -43,9 +60,12 @@ def ask_llama(user_input):
     if facts:
         facts_text="\n".join(f"- {key}: {value}" for key, value in facts)
         system_content=SYSTEM_PROMPT + f"\n\nDas weißt du bereits über den Nutzer:\n{facts_text}"
-    else:
-        system_content=SYSTEM_PROMPT
 
+    system_content+=(
+        f"\n\nAktuelles Datum und Uhrzeit: {current_time_text()}. "
+        "Wenn jemand nach Uhrzeit oder Datum fragt, nenne genau diese Angaben."
+    )
+    
     history=get_recent_conversations(limit=10)
     messages=[
         {

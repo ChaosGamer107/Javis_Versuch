@@ -2,6 +2,8 @@ from datetime import datetime
 from tools.tool_registry import register_tool
 
 def get_time():
+
+    print("TOOL Uhrzeit ausgeführt")
     
     return datetime.now().strftime("%H:%M:%S")
 
