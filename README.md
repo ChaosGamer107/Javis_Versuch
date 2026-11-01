@@ -36,9 +36,8 @@ python
 from tools.tool_registry import register_tool
 
 def get_weather(city):
-    """Liefert das Wetter für eine Stadt.
-
-    Args:
+      """Liefert das Wetter für eine Stadt.
+      Args:
         city: Name der Stadt, z.B. "Berlin".
     """
     return f"In {city} ist es sonnig."  # Platzhalter
